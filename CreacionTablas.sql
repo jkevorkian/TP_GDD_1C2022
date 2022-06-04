@@ -89,8 +89,8 @@ GO
 
 CREATE TABLE [MANTECA].[Medicion_Frenos]
 	(
-	[ID_MEDICION] int NOT NULL,--Agergo el ID para idenficarla
-	[GROSOR_PASTILLA] [nvarchar] NOT NULL,
+	[ID_MEDICION] int IDENTITY (1, 1) NOT NULL,--Agergo el ID para idenficarla
+	[GROSOR_PASTILLA] [decimal] (18,2) NOT NULL,
 	[POSICION] [nvarchar](255) NOT NULL,                     --PK
 	[TEMPERATURA] [decimal] (18,2) NOT NULL,
 	[ID_FRENO] int NOT NULL,							    --FK a Freno o lo relaciono con el ID del freno
@@ -171,7 +171,7 @@ CREATE TABLE [MANTECA].[Sector]
 	[ID_CIRCUITO] int NOT NULL,                             --FK a circuito o lo relaciono con el ID del circuito
 	[SECTOR_NOMBRE] [nvarchar] (255) NULL,
 	[SECTOR_DESCRIPCION] [nvarchar] (255) NULL,
-	[SECTOR_LONGITUD] [decimal] (18,2) NULL,
+	[SECTOR_LONGITUD] [decimal] (18,2) NOT NULL,
 	[SECTOR_TIPO] [nvarchar] (255) NOT NULL
 	)
 GO
@@ -187,7 +187,7 @@ GO
 
 CREATE TABLE [MANTECA].[Auto_Incidentado]
 	(
-	[ID_AUTO_INCIDENTADO] int NOT NULL,
+	[ID_AUTO_INCIDENTADO] int NOT NULL IDENTITY (1, 1),
 	[ID_INCIDENTE] int NOT NULL,  --PK,FK
 	[ID_AUTO] int NOT NULL,  --PK, FK
 	[ID_TIPO_INCIDENTE] int NOT NULL, --FK a Tipo Incidente
