@@ -60,7 +60,8 @@ CREATE TABLE [MANTECA].[Medicion_Auto]
 	[TIEMPO_DE_VUELTA] [decimal] (18,10) NOT NULL,
 	[POSICION] [decimal] (18,0) NOT NULL,
 	[VELOCIDAD] [decimal] (18,2) NOT NULL,
-	[COMBUSTIBLE] [decimal] (18,2) NOT NULL
+	[COMBUSTIBLE] [decimal] (18,2) NOT NULL,
+	[CODIGO_MEDICION] [decimal] (18,0) NOT NULL
 	)
 GO
 
@@ -77,7 +78,7 @@ GO
 
 CREATE TABLE [MANTECA].[Medicion_Neumatico]
 	(
-	[ID_MEDICION] int NOT NULL,--Agergo el ID para idenficarla
+	[ID_MEDICION] int NOT NULL IDENTITY (1, 1),--Agergo el ID para idenficarla
 	[PROFUNDIDAD] [decimal] (18,6) NOT NULL,
 	[POSICION] [nvarchar](255) NOT NULL,                     --PK
 	[PRESION] [decimal] (18,6) NOT NULL,
