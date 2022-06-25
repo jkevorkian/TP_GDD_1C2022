@@ -41,7 +41,7 @@ GO
 
 CREATE TABLE [MANTECA].[Medicion]
 	(
-	[ID_MEDICION] int NOT NULL IDENTITY (1, 1) CONSTRAINT PK_Medicion PRIMARY KEY,--Agergo el ID para idenficarla --FK
+	[ID_MEDICION] int NOT NULL CONSTRAINT PK_Medicion PRIMARY KEY,--Agergo el ID para idenficarla --FK
 	[FECHA_HORA] [datetime] NULL,
 	[ID_CARRERA] int NOT NULL,							    --FK a Carrera o lo relaciono con el ID de la carrera
 	[ID_SECTOR] int NOT NULL,							    --FK a Sector o lo relaciono con el ID deL sector
@@ -60,10 +60,11 @@ CREATE TABLE [MANTECA].[Medicion_Auto]
 	[TIEMPO_DE_VUELTA] [decimal] (18,10) NOT NULL,
 	[POSICION] [decimal] (18,0) NOT NULL,
 	[VELOCIDAD] [decimal] (18,2) NOT NULL,
-	[COMBUSTIBLE] [decimal] (18,2) NOT NULL
+	[COMBUSTIBLE] [decimal] (18,2) NOT NULL,
+	[CODIGO_MEDICION] int NOT NULL --FK a Medicion
 	)
 GO
-
+--SELECT * FROM gd_esquema.Maestra
 CREATE TABLE [MANTECA].[Medicion_Motor]
 	(
 	[ID_MEDICION] int NOT NULL IDENTITY (1, 1) CONSTRAINT PK_Medicion_Motor PRIMARY KEY,--Agergo el ID para idenficarla
@@ -71,18 +72,20 @@ CREATE TABLE [MANTECA].[Medicion_Motor]
 	[POTENCIA_MOMENTANEA] [decimal](18,6) NOT NULL,
 	[TEMP_ACEITE] [decimal] (18,6) NOT NULL,
 	[TEMP_AGUA] [decimal] (18,6) NOT NULL,
-	[RPM] [decimal] (18,6) NOT NULL
+	[RPM] [decimal] (18,6) NOT NULL,
+	[MEDICION_AUTO] int NOT NULL --FK a medicion_auto
 	)
 GO	
 
 CREATE TABLE [MANTECA].[Medicion_Neumatico]
 	(
-	[ID_MEDICION] int NOT NULL,--Agergo el ID para idenficarla
+	[ID_MEDICION] int NOT NULL IDENTITY (1, 1),--Agergo el ID para idenficarla
 	[PROFUNDIDAD] [decimal] (18,6) NOT NULL,
 	[POSICION] [nvarchar](255) NOT NULL,                     --PK
 	[PRESION] [decimal] (18,6) NOT NULL,
 	[TEMPERATURA] [decimal] (18,6) NOT NULL,
 	[ID_NEUMATICO] int NOT NULL,							    --FK a Neumatico o lo relaciono con el ID del neumatico
+	[MEDICION_AUTO] int NOT NULL --FK a medicion_auto
 	PRIMARY KEY(ID_MEDICION, POSICION)
 	)
 GO	
@@ -94,6 +97,7 @@ CREATE TABLE [MANTECA].[Medicion_Frenos]
 	[POSICION] [nvarchar](255) NOT NULL,                     --PK
 	[TEMPERATURA] [decimal] (18,2) NOT NULL,
 	[ID_FRENO] int NOT NULL,							    --FK a Freno o lo relaciono con el ID del freno
+	[MEDICION_AUTO] int NOT NULL --FK a medicion_auto
 	PRIMARY KEY(ID_MEDICION, POSICION)
 	)
 GO	
@@ -106,6 +110,7 @@ CREATE TABLE [MANTECA].[Medicion_Caja_De_Cambios]
 	[RPM] [decimal] (18,2) NOT NULL,
 	[DESGASTE_PORCENTUAL_ACUMULADO] [decimal] (18,2) NOT NULL,
 	[ID_CAJA_CAMBIO] int NOT NULL,							    --FK a Caja de cambios o lo relaciono con el ID de la caja de cambios
+	[MEDICION_AUTO] int NOT NULL --FK a medicion_auto
 	)
 GO	
 
@@ -249,21 +254,35 @@ ADD CONSTRAINT FK_NRO_AUTO FOREIGN KEY(ID_AUTO) REFERENCES [MANTECA].Auto(ID_AUT
 ALTER TABLE [MANTECA].[Medicion_Auto]
 ADD CONSTRAINT FK_PILOTO FOREIGN KEY(ID_PILOTO) REFERENCES [MANTECA].Piloto(ID_PILOTO);
 
+ALTER TABLE [MANTECA].[Medicion_Auto]
+ADD CONSTRAINT FK_MEDICION FOREIGN KEY(CODIGO_MEDICION) REFERENCES [MANTECA].Medicion(ID_MEDICION);
+
 --Medicion Motor
 ALTER TABLE [MANTECA].[Medicion_Motor]
 ADD CONSTRAINT FK_MOTOR FOREIGN KEY(ID_MOTOR) REFERENCES [MANTECA].Motor(ID_MOTOR);
 
+ALTER TABLE [MANTECA].[Medicion_Motor]
+ADD CONSTRAINT FK_MEDICION_A_MOTOR FOREIGN KEY(MEDICION_AUTO) REFERENCES [MANTECA].Medicion_Auto(ID_MEDICION);
 --Medicion Neumatico
 ALTER TABLE [MANTECA].[Medicion_Neumatico]
 ADD CONSTRAINT FK_NEUMATICO FOREIGN KEY(ID_NEUMATICO) REFERENCES [MANTECA].Neumatico(ID_NEUMATICO);
+
+ALTER TABLE [MANTECA].[Medicion_Neumatico]
+ADD CONSTRAINT FK_MEDICION_A_NEUMATICO FOREIGN KEY(MEDICION_AUTO) REFERENCES [MANTECA].Medicion_Auto(ID_MEDICION);
 
 --Medicion Freno
 ALTER TABLE [MANTECA].[Medicion_Frenos]
 ADD CONSTRAINT FK_FRENO FOREIGN KEY(ID_FRENO) REFERENCES [MANTECA].Freno(ID_FRENO);
 
+ALTER TABLE [MANTECA].[Medicion_Frenos]
+ADD CONSTRAINT FK_MEDICION_A_FRENOS FOREIGN KEY(MEDICION_AUTO) REFERENCES [MANTECA].Medicion_Auto(ID_MEDICION);
+
 --Medicion Caja De Cambios
 ALTER TABLE [MANTECA].[Medicion_Caja_De_Cambios]
 ADD CONSTRAINT FK_CAJA_CAMBIO FOREIGN KEY(ID_CAJA_CAMBIO) REFERENCES [MANTECA].Caja_De_Cambios(ID_CAJA_CAMBIO);
+
+ALTER TABLE [MANTECA].[Medicion_Caja_De_Cambios]
+ADD CONSTRAINT FK_MEDICION_A_CAJA FOREIGN KEY(MEDICION_AUTO) REFERENCES [MANTECA].Medicion_Auto(ID_MEDICION);
 
 --Carrera
 ALTER TABLE [MANTECA].[Carrera]
