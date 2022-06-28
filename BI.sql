@@ -1,6 +1,6 @@
 CREATE TABLE BI_Auto (
-    id_auto INTEGER(11) NOT NULL,
-    nro_auto INTEGER(11) NOT NULL,
+    id_auto INT NOT NULL,
+    nro_auto INT NOT NULL,
     modelo VARCHAR(255) NOT NULL,
     descripcion VARCHAR(255) NOT NULL,
     escuderia_nombre VARCHAR(255) NOT NULL,
@@ -9,7 +9,7 @@ CREATE TABLE BI_Auto (
 );
 
 CREATE TABLE BI_Piloto (
-    id_piloto INTEGER(11) NOT NULL,
+    id_piloto INT NOT NULL,
     nombre VARCHAR(50) NOT NULL,
     apellido VARCHAR(50) NOT NULL,
     nro_documento VARCHAR(15) NOT NULL,
@@ -21,9 +21,9 @@ CREATE TABLE BI_Piloto (
 );
 
 CREATE TABLE BI_Carrera (
-    id_carrera INTEGER(11) NOT NULL,
+    id_carrera INT NOT NULL,
     fecha_fin DATE NOT NULL,
-    vueltas_total INTEGER(3) NOT NULL,
+    vueltas_total INT NOT NULL,
     clima VARCHAR(100) NOT NULL,
     longitud DECIMAL(18,2) NOT NULL,
     circuito_nombre VARCHAR(255) NOT NULL,
@@ -31,21 +31,12 @@ CREATE TABLE BI_Carrera (
     PRIMARY KEY (id_carrera)
 );
 
-CREATE TABLE BI_Circuito (
-    id_circuito INTEGER(11) NOT NULL,
-    nombre VARCHAR(255) NOT NULL,
-    descipción VARCHAR(255) NOT NULL,
-    pais VARCHAR(255) NOT NULL,
-    PRIMARY KEY (id_circuito)
-);
-
 CREATE TABLE BI_Sector (
-    id_sector INTEGER(11) NOT NULL,
+    id_sector INT NOT NULL,
     nombre VARCHAR(255) NOT NULL,
     descipcion VARCHAR(255) NOT NULL,
     longitud DECIMAL(18,2) NOT NULL,
     tipo VARCHAR(255) NOT NULL,
-    circuito_nombre VARCHAR(255) NOT NULL,
     pais VARCHAR(255) NOT NULL,
     circuito_nombre VARCHAR(255) NOT NULL,
     circuito_pais VARCHAR(255) NOT NULL,
@@ -53,22 +44,22 @@ CREATE TABLE BI_Sector (
 );
 
 CREATE TABLE BI_Medición (
-    id_medicion INTEGER(11) NOT NULL,
-    id_carrera INTEGER(11) NOT NULL,
-    id_sector INTEGER(11) NOT NULL,
-    id_auto INTEGER(11) NOT NULL,
+    id_medicion INT NOT NULL,
+    id_carrera INT NOT NULL,
+    id_sector INT NOT NULL,
+    id_auto INT NOT NULL,
     PRIMARY KEY (id_medicion)
 );
 
 CREATE TABLE BI_Motor (
-    id_motor INTEGER(11) NOT NULL,
+    id_motor INT NOT NULL,
     modelo VARCHAR(255) NOT NULL,
     nro_serie VARCHAR(255) NOT NULL,
     PRIMARY KEY (id_motor)
 );
 
 CREATE TABLE BI_Neumático (
-    id_neumático INTEGER(11) NOT NULL,
+    id_neumático INT NOT NULL,
     nombre VARCHAR(255) NOT NULL,
     tipo VARCHAR(255) NOT NULL,
     nro_serie VARCHAR(255) NOT NULL,
@@ -76,46 +67,46 @@ CREATE TABLE BI_Neumático (
     PRIMARY KEY (id_neumático)
 );
 
-CREATE TABLE BI_Caja de cambios (
-    id_caja_cabio INTEGER(11) NOT NULL,
+CREATE TABLE BI_Caja_de_cambios (
+    id_caja_cambio INT NOT NULL,
     nombre VARCHAR(255) NOT NULL,
     modelo VARCHAR(50) NOT NULL,
     nro_serie VARCHAR(255) NOT NULL,
-    PRIMARY KEY (id_caja_cabio)
+    PRIMARY KEY (id_caja_cambio)
 );
 
 CREATE TABLE BI_Tipo_incidente (
-    id_tipo_incidente INTEGER(11) NOT NULL,
+    id_tipo_incidente INT NOT NULL,
     tipo VARCHAR(255) NOT NULL,
     descripcion VARCHAR(255) NOT NULL,
     PRIMARY KEY (id_tipo_incidente)
 );
 
 CREATE TABLE BI_Tiempo (
-    id_tiempo INTEGER(11) NOT NULL,
+    id_tiempo INT NOT NULL,
     fecha DATETIME NOT NULL,
-    anio INTEGER(4) NOT NULL,
-    cuatrimestre INTEGER(1) NOT NULL,
-    mes INTEGER(2) NOT NULL,
-    semana INTEGER(2) NOT NULL,
+    anio INT NOT NULL,
+    cuatrimestre INT NOT NULL,
+    mes INT NOT NULL,
+    semana INT NOT NULL,
     dia_semana VARCHAR(10) NOT NULL,
-    Hora INTEGER(2) NOT NULL,
-    minuto INTEGER(2) NOT NULL,
-    segundo INTEGER(2) NOT NULL,
+    Hora INT NOT NULL,
+    minuto INT NOT NULL,
+    segundo INT NOT NULL,
     PRIMARY KEY (id_tiempo)
 );
 
 CREATE TABLE BI_Medicion (
-    id_tiempo INTEGER(10) NOT NULL,
-    id_motor INTEGER(10) NOT NULL,
-    id_neumatico INTEGER(10) NOT NULL,
-    id_caja_de_cambios INTEGER(10) NOT NULL,
-    id_piloto INTEGER(10) NOT NULL,
+    id_tiempo INT NOT NULL,
+    id_motor INT NOT NULL,
+    id_neumatico INT NOT NULL,
+    id_caja_de_cambios INT NOT NULL,
+    id_piloto INT NOT NULL,
     id_medicion INTEGER NOT NULL,
-    id_auto INTEGER(10) NOT NULL,
-    id_sector INTEGER(10) NOT NULL,
-    id_carrera INTEGER(10) NOT NULL,
-    id_freno INTEGER(10) NOT NULL,
+    id_auto INT NOT NULL,
+    id_sector INT NOT NULL,
+    id_carrera INT NOT NULL,
+    id_freno INT NOT NULL,
     combustible DECIMAL(18,2) NOT NULL,
     distancia_recorrida_en_carrera DECIMAL(18,6) NOT NULL,
     nro_vuelta DECIMAL(18,0) NOT NULL,
@@ -140,22 +131,22 @@ CREATE TABLE BI_Medicion (
 );
 
 CREATE TABLE BI_Parada_en_box (
-    id_carrera INTEGER(10) NOT NULL,
-    id_neumatico_anterior INTEGER(11) NOT NULL,
-    id_neumatico_nuevo INTEGER(11) NOT NULL,
-    nro_auto INTEGER(11) NOT NULL,
-    id_tiempo INTEGER(11) NOT NULL,
+    id_carrera INT NOT NULL,
+    id_neumatico_anterior INT NOT NULL,
+    id_neumatico_nuevo INT NOT NULL,
+    nro_auto INT NOT NULL,
+    id_tiempo INT NOT NULL,
     nro_vuelta DECIMAL(18,0) NOT NULL,
-    id_piloto INTEGER(10) NOT NULL,
+    id_piloto INT NOT NULL,
     Column26 INTEGER NOT NULL,
-    id_sector INTEGER(10) NOT NULL,
+    id_sector INT NOT NULL,
     duracion DECIMAL(18,2) NOT NULL,
     posición VARCHAR(255) NOT NULL,
     PRIMARY KEY (id_carrera, id_neumatico_anterior, id_neumatico_nuevo, nro_auto, id_tiempo, id_piloto, id_sector)
 );
 
 CREATE TABLE BI_Freno (
-    id_freno INTEGER(10) NOT NULL,
+    id_freno INT NOT NULL,
     nombre VARCHAR(255) NOT NULL,
     nro_serie VARCHAR(255) NOT NULL,
     tamanio_disco DECIMAL(18,2) NOT NULL,
@@ -164,22 +155,21 @@ CREATE TABLE BI_Freno (
 );
 
 CREATE TABLE BI_Incidente (
-    id_sector INTEGER(10) NOT NULL,
-    id_carrera INTEGER(10) NOT NULL,
-    nro_auto INTEGER(10) NOT NULL,
-    id_tiempo INTEGER(10) NOT NULL,
-    id_piloto INTEGER(10) NOT NULL,
+    id_sector INT NOT NULL,
+    id_carrera INT NOT NULL,
+    nro_auto INT NOT NULL,
+    id_tiempo INT NOT NULL,
+    id_piloto INT NOT NULL,
     bandera VARCHAR(255) NOT NULL,
     tiempo TIMESTAMP NOT NULL,
     nro_vuelta DECIMAL(18, 0) NOT NULL,
     tipo VARCHAR(255) NOT NULL,
     descipción VARCHAR(255) NOT NULL,
-    tipo VARCHAR(255) NOT NULL,
     PRIMARY KEY (id_sector, id_carrera, nro_auto, id_tiempo, id_piloto)
 );
 
 CREATE TABLE BI_Circuito (
-    id_circuito INTEGER(11) NOT NULL,
+    id_circuito INT NOT NULL,
     nombre VARCHAR(255) NOT NULL,
     pais VARCHAR(255) NOT NULL,
     PRIMARY KEY (id_circuito)
