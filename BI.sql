@@ -1,14 +1,16 @@
-CREATE TABLE BI_Auto (
+USE [GD1C2022]
+CREATE TABLE [MANTECA].[BI_Auto] (
     id_auto INT NOT NULL,
     nro_auto INT NOT NULL,
     modelo VARCHAR(255) NOT NULL,
     descripcion VARCHAR(255) NOT NULL,
     escuderia_nombre VARCHAR(255) NOT NULL,
     escuderia_nacionalidad VARCHAR(255) NOT NULL,
+	id_escuderia INT NOT NULL,
     PRIMARY KEY (id_auto)
 );
 
-CREATE TABLE BI_Piloto (
+CREATE TABLE [MANTECA].[BI_Piloto] (
     id_piloto INT NOT NULL,
     nombre VARCHAR(50) NOT NULL,
     apellido VARCHAR(50) NOT NULL,
@@ -20,7 +22,7 @@ CREATE TABLE BI_Piloto (
     UNIQUE (nro_documento, tipo_documento)
 );
 
-CREATE TABLE BI_Carrera (
+CREATE TABLE [MANTECA].[BI_Carrera] (
     id_carrera INT NOT NULL,
     fecha_fin DATE NOT NULL,
     vueltas_total INT NOT NULL,
@@ -28,10 +30,11 @@ CREATE TABLE BI_Carrera (
     longitud DECIMAL(18,2) NOT NULL,
     circuito_nombre VARCHAR(255) NOT NULL,
     circuito_pais VARCHAR(255) NOT NULL,
+	id_circuito INT NOT NULL,
     PRIMARY KEY (id_carrera)
 );
 
-CREATE TABLE BI_Sector (
+CREATE TABLE [MANTECA].[BI_Sector] (
     id_sector INT NOT NULL,
     nombre VARCHAR(255) NOT NULL,
     descipcion VARCHAR(255) NOT NULL,
@@ -40,10 +43,11 @@ CREATE TABLE BI_Sector (
     pais VARCHAR(255) NOT NULL,
     circuito_nombre VARCHAR(255) NOT NULL,
     circuito_pais VARCHAR(255) NOT NULL,
+	id_circuito INT NOT NULL,
     PRIMARY KEY (id_sector)
 );
 
-CREATE TABLE BI_Medición (
+CREATE TABLE [MANTECA].[BI_Medición] (
     id_medicion INT NOT NULL,
     id_carrera INT NOT NULL,
     id_sector INT NOT NULL,
@@ -51,14 +55,14 @@ CREATE TABLE BI_Medición (
     PRIMARY KEY (id_medicion)
 );
 
-CREATE TABLE BI_Motor (
+CREATE TABLE [MANTECA].[BI_Motor] (
     id_motor INT NOT NULL,
     modelo VARCHAR(255) NOT NULL,
     nro_serie VARCHAR(255) NOT NULL,
     PRIMARY KEY (id_motor)
 );
 
-CREATE TABLE BI_Neumático (
+CREATE TABLE [MANTECA].[BI_Neumático] (
     id_neumático INT NOT NULL,
     nombre VARCHAR(255) NOT NULL,
     tipo VARCHAR(255) NOT NULL,
@@ -67,7 +71,7 @@ CREATE TABLE BI_Neumático (
     PRIMARY KEY (id_neumático)
 );
 
-CREATE TABLE BI_Caja_de_cambios (
+CREATE TABLE [MANTECA].[BI_Caja_de_cambios] (
     id_caja_cambio INT NOT NULL,
     nombre VARCHAR(255) NOT NULL,
     modelo VARCHAR(50) NOT NULL,
@@ -75,14 +79,14 @@ CREATE TABLE BI_Caja_de_cambios (
     PRIMARY KEY (id_caja_cambio)
 );
 
-CREATE TABLE BI_Tipo_incidente (
+CREATE TABLE [MANTECA].[BI_Tipo_incidente] (
     id_tipo_incidente INT NOT NULL,
     tipo VARCHAR(255) NOT NULL,
     descripcion VARCHAR(255) NOT NULL,
     PRIMARY KEY (id_tipo_incidente)
 );
 
-CREATE TABLE BI_Tiempo (
+CREATE TABLE [MANTECA].[BI_Tiempo] (
     id_tiempo INT NOT NULL,
     fecha DATETIME NOT NULL,
     anio INT NOT NULL,
@@ -96,7 +100,7 @@ CREATE TABLE BI_Tiempo (
     PRIMARY KEY (id_tiempo)
 );
 
-CREATE TABLE BI_Medicion (
+CREATE TABLE [MANTECA].[BI_Medicion] (
     id_tiempo INT NOT NULL,
     id_motor INT NOT NULL,
     id_neumatico INT NOT NULL,
@@ -130,7 +134,7 @@ CREATE TABLE BI_Medicion (
     PRIMARY KEY (id_tiempo, id_motor, id_neumatico, id_caja_de_cambios, id_piloto, id_auto, id_sector, id_carrera, id_freno)
 );
 
-CREATE TABLE BI_Parada_en_box (
+CREATE TABLE [MANTECA].[BI_Parada_en_box] (
     id_carrera INT NOT NULL,
     id_neumatico_anterior INT NOT NULL,
     id_neumatico_nuevo INT NOT NULL,
@@ -145,7 +149,7 @@ CREATE TABLE BI_Parada_en_box (
     PRIMARY KEY (id_carrera, id_neumatico_anterior, id_neumatico_nuevo, nro_auto, id_tiempo, id_piloto, id_sector)
 );
 
-CREATE TABLE BI_Freno (
+CREATE TABLE [MANTECA].[BI_Freno] (
     id_freno INT NOT NULL,
     nombre VARCHAR(255) NOT NULL,
     nro_serie VARCHAR(255) NOT NULL,
@@ -154,7 +158,7 @@ CREATE TABLE BI_Freno (
     PRIMARY KEY (id_freno)
 );
 
-CREATE TABLE BI_Incidente (
+CREATE TABLE [MANTECA].[BI_Incidente] (
     id_sector INT NOT NULL,
     id_carrera INT NOT NULL,
     nro_auto INT NOT NULL,
@@ -166,11 +170,4 @@ CREATE TABLE BI_Incidente (
     tipo VARCHAR(255) NOT NULL,
     descipción VARCHAR(255) NOT NULL,
     PRIMARY KEY (id_sector, id_carrera, nro_auto, id_tiempo, id_piloto)
-);
-
-CREATE TABLE BI_Circuito (
-    id_circuito INT NOT NULL,
-    nombre VARCHAR(255) NOT NULL,
-    pais VARCHAR(255) NOT NULL,
-    PRIMARY KEY (id_circuito)
 );
