@@ -174,10 +174,10 @@ CREATE TABLE [MANTECA].[BI_Medicion] (
     caja_de_cambios_temperatura_aceite DECIMAL(18,2) NOT NULL,
     caja_de_cambios_rpm DECIMAL(18,2) NOT NULL,
     caja_de_cambios_desgaste_porcentual_acumulado DECIMAL(18,2) NOT NULL,
-    --PRIMARY KEY (id_fecha, id_motor, id_neumatico, id_caja_de_cambios, id_piloto, id_auto, id_sector, id_carrera, id_freno)
+    PRIMARY KEY (id_medicion)
 );
 
-/*ALTER TABLE [MANTECA].[BI_Medicion]
+ALTER TABLE [MANTECA].[BI_Medicion]
 ADD
 FOREIGN KEY (id_fecha) REFERENCES [MANTECA].BI_Fecha,
 FOREIGN KEY (id_motor) REFERENCES [MANTECA].BI_Motor,
@@ -188,7 +188,7 @@ FOREIGN KEY (id_auto) REFERENCES [MANTECA].BI_Auto,
 FOREIGN KEY (id_sector) REFERENCES [MANTECA].BI_Sector,
 FOREIGN KEY (id_carrera) REFERENCES [MANTECA].BI_Carrera,
 FOREIGN KEY (id_freno) REFERENCES [MANTECA].BI_Freno
-*/
+
 INSERT INTO MANTECA.BI_Medicion
 (id_fecha, id_medicion, id_motor, id_neumatico, id_caja_de_cambios, id_piloto, id_auto, id_sector, id_carrera, id_freno, combustible, distancia_recorrida_en_carrera, nro_vuelta, distancia_recorrida_en_vuelta, 
 posicion, velocidad, tiempo_de_vuelta, motor_potencia_momentanea, motor_temp_aceite, motor_temp_agua, motor_rpm, neumatico_profundidad, neumatico_presion, neumatico_temperatura, freno_grosor_pastilla,
@@ -217,18 +217,15 @@ CREATE TABLE [MANTECA].[BI_Parada_en_box] (
     nro_vuelta DECIMAL(18,0)  NULL,
     duracion DECIMAL(18,2)  NULL,
    -- posicion VARCHAR(255)  NULL
-    --PRIMARY KEY (id_carrera, id_neumatico_anterior, id_neumatico_nuevo, id_auto, id_fecha, id_piloto, id_sector)
+    PRIMARY KEY (id_parada)
 );
-/*
+
 ALTER TABLE [MANTECA].[BI_Parada_en_box]
 ADD
---FOREIGN KEY (id_fecha) REFERENCES [MANTECA].BI_Fecha,
---FOREIGN KEY (id_neumatico_anterior) REFERENCES [MANTECA].BI_Neumatico,
---FOREIGN KEY (id_neumatico_nuevo) REFERENCES [MANTECA].BI_Neumatico,
---FOREIGN KEY (id_auto) REFERENCES [MANTECA].BI_Auto,
---FOREIGN KEY (id_carrera) REFERENCES [MANTECA].BI_Carrera,
---FOREIGN KEY (id_piloto) REFERENCES [MANTECA].BI_Piloto,
---FOREIGN KEY (id_sector) REFERENCES [MANTECA].BI_Sector*/
+FOREIGN KEY (id_fecha) REFERENCES [MANTECA].BI_Fecha,
+FOREIGN KEY (id_auto) REFERENCES [MANTECA].BI_Auto,
+FOREIGN KEY (id_carrera) REFERENCES [MANTECA].BI_Carrera,
+FOREIGN KEY (id_piloto) REFERENCES [MANTECA].BI_Piloto
 
 INSERT INTO MANTECA.BI_Parada_en_box
 (id_parada, id_carrera, id_auto, nro_vuelta, id_piloto, duracion, id_fecha)
@@ -249,17 +246,15 @@ CREATE TABLE [MANTECA].[BI_Incidente] (
     tipo VARCHAR(255) NULL,
 	nro_vuelta DECIMAL(18,0),
 	id_auto_incidentado INT NOT NULL,
-    --PRIMARY KEY (id_sector, id_carrera, id_auto, id_fecha, id_piloto)
+    --PRIMARY KEY (id_incidente)
 );
-/*
+
 ALTER TABLE [MANTECA].[BI_Medicion]
 ADD
---FOREIGN KEY (id_sector) REFERENCES [MANTECA].BI_Sector,
---FOREIGN KEY (id_carrera) REFERENCES [MANTECA].BI_Carrera,
---FOREIGN KEY (id_auto) REFERENCES [MANTECA].BI_Auto,
---FOREIGN KEY (id_fecha) REFERENCES [MANTECA].BI_Fecha,
---FOREIGN KEY (id_piloto) REFERENCES [MANTECA].BI_piloto
-*/
+FOREIGN KEY (id_sector) REFERENCES [MANTECA].BI_Sector,
+FOREIGN KEY (id_auto) REFERENCES [MANTECA].BI_Auto,
+FOREIGN KEY (id_fecha) REFERENCES [MANTECA].BI_Fecha
+
 INSERT INTO MANTECA.BI_Incidente 
 (id_incidente, id_sector, id_auto, tipo,nro_vuelta,id_auto_incidentado,id_fecha)
 SELECT ai.ID_INCIDENTE, ai.ID_SECTOR, ai.ID_AUTO, ai.ID_TIPO_INCIDENTE , ai.NRO_VUELTA, ai.ID_AUTO_INCIDENTADO, f.ID_FECHA FROM MANTECA.Auto_Incidentado ai
@@ -291,8 +286,22 @@ cada vuelta. Lo mismo aplica para el desgaste de frenos.
 Para el cálculo del desgaste del motor se toma en cuenta la perdida de
 potencia. */
 
-
-
+SELECT m.id_auto,
+	   c.id_circuito,
+	   m.nro_vuelta,
+	   avg(m.motor_potencia_momentanea) 'desgaste motor',
+	   ISNULL(((SELECT TOP 1 N1.neumatico_profundidad FROM MANTECA.BI_Medicion N1
+		        WHERE N1.distancia_recorrida_en_vuelta=0 AND N1.id_auto+N1.nro_vuelta=m.id_auto+m.nro_vuelta)-(SELECT TOP 1 N2.neumatico_profundidad FROM MANTECA.BI_Medicion N2
+																				        					   WHERE N2.distancia_recorrida_en_vuelta=150 AND N2.id_auto+N2.nro_vuelta=m.id_auto+m.nro_vuelta)),'0') 'desgaste neumaticos',
+       ISNULL(((SELECT TOP 1 F1.freno_grosor_pastilla FROM MANTECA.BI_Medicion F1
+		        WHERE F1.distancia_recorrida_en_vuelta=0 AND F1.id_auto+F1.nro_vuelta=m.id_auto+m.nro_vuelta)-(SELECT TOP 1 F2.freno_grosor_pastilla FROM MANTECA.BI_Medicion F2
+																				        					   WHERE F2.distancia_recorrida_en_vuelta=150 AND F2.id_auto+F2.nro_vuelta=m.id_auto+m.nro_vuelta)),'0') 'desgaste frenos',
+	   m.caja_de_cambios_desgaste_porcentual_acumulado 'desgaste caja de cambios'
+FROM MANTECA.BI_Medicion m
+JOIN MANTECA.BI_Carrera c ON c.id_carrera = m.id_carrera
+WHERE m.distancia_recorrida_en_vuelta=150
+GROUP BY id_auto, id_circuito, nro_vuelta, caja_de_cambios_desgaste_porcentual_acumulado
+ORDER BY 1,2,3
 /*
  Mejor tiempo de vuelta de cada escudería por circuito por año.
 El mejor tiempo está dado por el mínimo tiempo en que un auto logra
@@ -308,46 +317,78 @@ JOIN MANTECA.BI_Fecha f ON f.ID_FECHA = m.id_fecha
 WHERE m.distancia_recorrida_en_vuelta = 150
 GROUP BY a.id_escuderia, s.id_circuito , f.FECHA_ANIO
 
+
 /*Los 3 de circuitos con mayor consumo de combustible promedio.*/
-/*
-CREATE VIEW V_circuitos_con_mayor_consumo_combustible 
-(id_circuito) AS 
-SELECT TOP 3 id_circuito 
-FROM BI_Medicion HECHO
-GROUP BY id_carrera, id_auto, id_tiempo
-ORDER BY
-SELECT combustible FROM BI_Medicion I WHERE min(HECHO.id_tiempo) = I.id_tiempo) group by id_carrera, id_auto, id_tiempo) - 
-SELECT combustible FROM BI_Medicion I WHERE max(HECHO.id_tiempo) = I.id_tiempo) group by id_carrera, id_auto, id_tiempo)
-*/
+
+CREATE VIEW mayor_consumo_combustible_promedio
+(id_circuito, consumo_combustible_promedio) AS
+SELECT TOP 3 s.id_circuito, avg(combustible) FROM MANTECA.BI_Medicion m
+JOIN MANTECA.BI_Sector s ON s.id_sector = m.id_sector
+GROUP BY s.id_circuito
+ORDER BY avg(combustible) desc
+
 /*
  Máxima velocidad alcanzada por cada auto en cada tipo de sector de cada
 circuito.12*/
 
-
+CREATE VIEW maxima_velocidad_x_auto_x_sector_x_circuito
+(maxima_velocidad, auto, sector, circuito) AS
+SELECT max(velocidad), id_auto, s.tipo, id_circuito FROM MANTECA.BI_Medicion m
+JOIN MANTECA.BI_Sector s ON s.id_sector = m.id_sector
+GROUP BY id_auto, s.tipo, id_circuito
 
 /*
  Tiempo promedio que tardó cada escudería en las paradas por cuatrimestre.*/
 
-
+CREATE VIEW tiempo_promedio_en_parada_x_escuderia
+(tiempo_promedio, id_escuderia, cuatrimestre) AS
+SELECT avg(duracion), id_escuderia, FECHA_CUATRIMESTRE FROM MANTECA.BI_Parada_en_box p
+JOIN MANTECA.BI_Auto a ON a.id_auto = p.id_auto
+JOIN MANTECA.BI_Fecha f ON f.ID_FECHA = p.id_fecha
+GROUP BY id_escuderia, FECHA_CUATRIMESTRE
 
 /*
  Cantidad de paradas por circuito por escudería por año.*/
 
-
+CREATE VIEW MANTECA.cantidad_paradas_x_circuito_x_escuderia_x_anio
+(cantidad_de_paradas, id_circuito, id_escuderia, anio) AS
+SELECT COUNT(*), id_circuito, id_escuderia, FECHA_ANIO FROM MANTECA.BI_Parada_en_box p
+JOIN MANTECA.BI_Carrera c ON c.id_carrera = p.id_carrera
+JOIN MANTECA.BI_Auto a ON a.id_auto = p.id_auto
+JOIN MANTECA.BI_Fecha f ON f.ID_FECHA = p.id_fecha
+GROUP BY id_circuito, id_escuderia, FECHA_ANIO
 
 /*
  Los 3 circuitos donde se consume mayor cantidad en tiempo de paradas en
 boxes.*/
 
-
+CREATE VIEW top_3_circuitos_con_mayor_tiempo_de_paradas
+(id_circuito, tiempo_de_paradas_total) AS
+SELECT TOP 3 id_circuito, sum(duracion) FROM MANTECA.BI_Parada_en_box p
+JOIN MANTECA.BI_Carrera c ON c.id_carrera = p.id_carrera
+GROUP BY id_circuito
+ORDER BY sum(duracion) desc
 
 /*
  Los 3 circuitos más peligrosos del año, en función mayor cantidad de
 incidentes.*/
 
-
+CREATE VIEW top_3_circuitos_mas_peligrosos
+(id_circuito, incidentes) AS 
+SELECT id_circuito, count(id_incidente) FROM MANTECA.BI_Incidente i
+JOIN MANTECA.BI_Sector s ON s.id_sector = i.id_sector
+GROUP BY id_circuito
+ORDER BY count(id_incidente)
 
 /*
  Promedio de incidentes que presenta cada escudería por año en los
 distintos tipo de sectores
 */
+
+CREATE VIEW promedio_de_incidentes_anual_x_escuderia_tipo_de_sector
+(promedio_de_incidentes, id_escuderia, anio, tipo_de_sector) AS
+SELECT avg(id_incidente), id_escuderia, FECHA_ANIO, s.tipo FROM MANTECA.BI_Incidente i
+JOIN MANTECA.BI_Auto a ON a.id_auto = i.id_auto
+JOIN MANTECA.BI_Fecha f ON f.ID_FECHA = i.id_fecha
+JOIN MANTECA.BI_Sector s ON s.id_sector = i.id_sector
+GROUP BY id_escuderia, FECHA_ANIO, s.tipo
