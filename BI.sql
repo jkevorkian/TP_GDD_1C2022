@@ -328,3 +328,77 @@ GROUP BY id_circuito, nro_vuelta, id_escuderia))
 FROM BI_Medicion
 GROUP BY id_circuito, nro_vuelta, id_escuderia
 */
+
+--VISTAS--
+
+/* Vista modelo
+
+CREATE VIEW Nombre_vista 
+(codigo,apellido,nombre,estado) AS 
+SELECT etcetc
+
+*/
+
+
+/*
+ Desgaste promedio de cada componente de cada auto por vuelta por
+circuito.
+Tener en cuenta que, para el cálculo del desgaste de los neumáticos, se
+toma la diferencia de mm del mismo entre la medición inicial y final de
+cada vuelta. Lo mismo aplica para el desgaste de frenos.
+Para el cálculo del desgaste del motor se toma en cuenta la perdida de
+potencia. */
+
+
+
+/*
+ Mejor tiempo de vuelta de cada escudería por circuito por año.
+El mejor tiempo está dado por el mínimo tiempo en que un auto logra
+realizar una vuelta de un circuito.*/
+
+
+
+/*
+ Los 3 de circuitos con mayor consumo de combustible promedio.*/
+
+CREATE VIEW V_circuitos_con_mayor_consumo_combustible 
+(id_circuito) AS 
+SELECT TOP 3 id_circuito 
+FROM BI_Medicion HECHO
+GROUP BY id_carrera, id_auto, id_tiempo
+ORDER BY
+SELECT combustible FROM BI_Medicion I WHERE min(HECHO.id_tiempo) = I.id_tiempo) group by id_carrera, id_auto, id_tiempo) - 
+SELECT combustible FROM BI_Medicion I WHERE max(HECHO.id_tiempo) = I.id_tiempo) group by id_carrera, id_auto, id_tiempo)
+
+/*
+ Máxima velocidad alcanzada por cada auto en cada tipo de sector de cada
+circuito.12*/
+
+
+
+/*
+ Tiempo promedio que tardó cada escudería en las paradas por cuatrimestre.*/
+
+
+
+/*
+ Cantidad de paradas por circuito por escudería por año.*/
+
+
+
+/*
+ Los 3 circuitos donde se consume mayor cantidad en tiempo de paradas en
+boxes.*/
+
+
+
+/*
+ Los 3 circuitos más peligrosos del año, en función mayor cantidad de
+incidentes.*/
+
+
+
+/*
+ Promedio de incidentes que presenta cada escudería por año en los
+distintos tipo de sectores
+*/
