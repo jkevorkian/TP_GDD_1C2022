@@ -298,17 +298,17 @@ potencia. */
 El mejor tiempo está dado por el mínimo tiempo en que un auto logra
 realizar una vuelta de un circuito.*/
 
-CREATE VIEW mejor_tiempo_vuelta AS
-SELECT id_circuito, 
-min ((SELECT max(tiempo_de_vuelta) FROM BI_Medicion 
-
-GROUP BY id_circuito, nro_vuelta, id_escuderia))
-FROM BI_Medicion
-GROUP BY id_circuito, nro_vuelta, id_escuderia
 
 
-/*
- Los 3 de circuitos con mayor consumo de combustible promedio.*/
+CREATE VIEW [MANTECA].[mejor_tiempo_vuelta] (id_escuderia,tiempo,id_circuito,anio) AS
+SELECT  a.id_escuderia, MIN(m.tiempo_de_vuelta),s.id_circuito, f.FECHA_ANIO FROM MANTECA.BI_Medicion m
+JOIN MANTECA.BI_Auto a ON a.id_auto = m.id_auto
+JOIN MANTECA.BI_Sector s ON s.id_sector = m.id_sector
+JOIN MANTECA.BI_Fecha f ON f.ID_FECHA = m.id_fecha
+WHERE m.distancia_recorrida_en_vuelta = 150
+GROUP BY a.id_escuderia, s.id_circuito , f.FECHA_ANIO
+
+/*Los 3 de circuitos con mayor consumo de combustible promedio.*/
 /*
 CREATE VIEW V_circuitos_con_mayor_consumo_combustible 
 (id_circuito) AS 
