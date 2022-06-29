@@ -113,6 +113,25 @@ CREATE TABLE [MANTECA].[BI_Fecha] (
 	FECHA_CUATRIMESTRE TINYINT
 );
 
+INSERT INTO MANTECA.BI_Fecha
+(FECHA_ANIO, FECHA_MES, FECHA_DIA, FECHA_CUATRIMESTRE)
+SELECT (YEAR(CARRERA_FECHA_INICIO)) AS 'ANIO', MONTH(CARRERA_FECHA_INICIO), DAY(CARRERA_FECHA_INICIO), CASE MONTH(CARRERA_FECHA_INICIO)
+       WHEN '1' then '1'
+       WHEN '2' then '1'
+       WHEN '3' then '1'
+       WHEN '4' then '1'
+       WHEN '5' then '2'
+       WHEN '6'  then '2'
+       WHEN '7' then '2'
+       WHEN '8' then '2'
+       WHEN '9' then '3'
+       WHEN '10' then '3'
+       WHEN '11' then '3'
+       WHEN '12' then '3'
+     END  AS 'CUATRIMESTRE'
+     from MANTECA.Carrera
+ORDER BY 1, 2, 3, 4
+
 CREATE TABLE [MANTECA].[BI_Freno] (
     id_freno INT NOT NULL,
     nro_serie VARCHAR(255) NOT NULL,
@@ -171,10 +190,10 @@ FOREIGN KEY (id_carrera) REFERENCES [MANTECA].BI_Carrera,
 FOREIGN KEY (id_freno) REFERENCES [MANTECA].BI_Freno
 */
 INSERT INTO MANTECA.BI_Medicion
-(id_medicion, id_motor, id_neumatico, id_caja_de_cambios, id_piloto, id_auto, id_sector, id_carrera, id_freno, combustible, distancia_recorrida_en_carrera, nro_vuelta, distancia_recorrida_en_vuelta, 
+(id_fecha, id_medicion, id_motor, id_neumatico, id_caja_de_cambios, id_piloto, id_auto, id_sector, id_carrera, id_freno, combustible, distancia_recorrida_en_carrera, nro_vuelta, distancia_recorrida_en_vuelta, 
 posicion, velocidad, tiempo_de_vuelta, motor_potencia_momentanea, motor_temp_aceite, motor_temp_agua, motor_rpm, neumatico_profundidad, neumatico_presion, neumatico_temperatura, freno_grosor_pastilla,
 freno_temperatura, caja_de_cambios_caja, caja_de_cambios_temperatura_aceite, caja_de_cambios_rpm, caja_de_cambios_desgaste_porcentual_acumulado)
-SELECT m.ID_MEDICION, ID_MOTOR, ID_NEUMATICO, ID_CAJA_CAMBIO, ID_PILOTO, m.ID_AUTO, ID_SECTOR, ID_CARRERA, ID_FRENO, COMBUSTIBLE, DISTANCIA_RECORRIDA_CARRERA, VUELTA_NUMERO, DISTANCIA_RECORRIDA_VUELTA,
+SELECT f.ID_FECHA, m.ID_MEDICION, ID_MOTOR, ID_NEUMATICO, ID_CAJA_CAMBIO, ID_PILOTO, m.ID_AUTO, ID_SECTOR, m.ID_CARRERA, ID_FRENO, COMBUSTIBLE, DISTANCIA_RECORRIDA_CARRERA, VUELTA_NUMERO, DISTANCIA_RECORRIDA_VUELTA,
 ma.POSICION, VELOCIDAD, TIEMPO_DE_VUELTA, POTENCIA_MOMENTANEA, mm.TEMP_ACEITE, mm.TEMP_AGUA, mm.RPM, mn.PROFUNDIDAD, mn.PRESION, mn.TEMPERATURA, mf.GROSOR_PASTILLA,
 mf.TEMPERATURA, mc.CAJA, mc.TEMPERATURA_ACEITE, mc.RPM, mc.DESGASTE_PORCENTUAL_ACUMULADO FROM MANTECA.Medicion m
 JOIN MANTECA.Medicion_Auto ma ON m.ID_MEDICION = ma.ID_MEDICION
@@ -182,21 +201,22 @@ JOIN MANTECA.Medicion_Caja_De_Cambios mc ON m.ID_MEDICION = mc.ID_MEDICION
 JOIN MANTECA.Medicion_Frenos mf ON m.ID_MEDICION = mf.ID_MEDICION
 JOIN MANTECA.Medicion_Motor mm ON m.ID_MEDICION = mm.ID_MEDICION
 JOIN MANTECA.Medicion_Neumatico mn ON m.ID_MEDICION = mn.ID_MEDICION
---JOIN MANTECA.BI_Fecha f ON f.FECHA_ANIO = YEAR(m.FECHA_HORA) AND f.FECHA_MES = MONTH(m.FECHA_HORA) AND f.FECHA_DIA = DAY(m.FECHA_HORA)
+JOIN MANTECA.BI_Carrera c ON c.id_carrera = m.ID_CARRERA
+JOIN MANTECA.BI_Fecha f ON f.FECHA_ANIO = YEAR(c.fecha_inicio) AND f.FECHA_MES = MONTH(c.fecha_inicio) AND f.FECHA_DIA = DAY(c.fecha_inicio)
 
 
 
 CREATE TABLE [MANTECA].[BI_Parada_en_box] (
 	id_parada INT,--PRIMARY KEY,
     id_carrera INT  NULL,
-    id_neumatico_anterior INT NULL,
-    id_neumatico_nuevo INT NULL,
+   -- id_neumatico_anterior INT NULL,
+   -- id_neumatico_nuevo INT NULL,
     id_auto INT  NULL,
-    --id_fecha INT NOT NULL,
+    id_fecha INT NOT NULL,
     id_piloto INT  NULL,
     nro_vuelta DECIMAL(18,0)  NULL,
     duracion DECIMAL(18,2)  NULL,
-    posicion VARCHAR(255)  NULL
+   -- posicion VARCHAR(255)  NULL
     --PRIMARY KEY (id_carrera, id_neumatico_anterior, id_neumatico_nuevo, id_auto, id_fecha, id_piloto, id_sector)
 );
 /*
@@ -211,21 +231,24 @@ ADD
 --FOREIGN KEY (id_sector) REFERENCES [MANTECA].BI_Sector*/
 
 INSERT INTO MANTECA.BI_Parada_en_box
-(id_parada, id_carrera, id_auto, nro_vuelta, id_piloto, duracion)
-SELECT DISTINCT TOP 1000  pb.ID_PARADA, c.ID_CARRERA, pb.ID_AUTO, pb.NUMERO_VUELTA, ma.ID_PILOTO, pb.PARADA_DURACION FROM MANTECA.Parada_En_Box pb
-LEFT JOIN MANTECA.Medicion_Auto ma ON ma.ID_AUTO = pb.ID_AUTO AND pb.NUMERO_VUELTA = ma.VUELTA_NUMERO
-LEFT JOIN MANTECA.Carrera c ON pb.ID_CIRCUITO=c.ID_CIRCUITO
+(id_parada, id_carrera, id_auto, nro_vuelta, id_piloto, duracion, id_fecha)
+SELECT DISTINCT TOP 1000  pb.ID_PARADA, c.ID_CARRERA, pb.ID_AUTO, pb.NUMERO_VUELTA, ma.ID_PILOTO, pb.PARADA_DURACION, f.ID_FECHA
+FROM MANTECA.Parada_En_Box pb
+JOIN MANTECA.Medicion_Auto ma ON ma.ID_AUTO = pb.ID_AUTO AND pb.NUMERO_VUELTA = ma.VUELTA_NUMERO
+JOIN MANTECA.Carrera c ON pb.ID_CIRCUITO = c.ID_CIRCUITO
 --LEFT JOIN MANTECA.Medicion m ON m.ID_MEDICION = ma.ID_MEDICION
---JOIN MANTECA.BI_Fecha f ON f.FECHA_ANIO = YEAR(m.FECHA_HORA) AND f.FECHA_MES = MONTH(m.FECHA_HORA) AND f.FECHA_DIA = DAY(m.FECHA_HORA)
---GROUP BY pb.ID_PARADA, m.ID_CARRERA, cn.ID_NEUMATICO_ANTERIOR, cn.ID_NEUMATICO_NUEVO, pb.ID_AUTO,NUMERO_VUELTA, ma.ID_PILOTO, m.ID_SECTOR, pb.PARADA_DURACION, cn.POSICION 
+JOIN MANTECA.BI_Fecha f ON f.FECHA_ANIO = YEAR(c.CARRERA_FECHA_INICIO) AND f.FECHA_MES = MONTH(c.CARRERA_FECHA_INICIO) AND f.FECHA_DIA = DAY(c.CARRERA_FECHA_INICIO)
+--GROUP BY pb.ID_PARADA, m.ID_CARRERA, cn.ID_NEUMATICO_ANTERIOR, cn.ID_NEUMATICO_NUEVO, pb.ID_AUTO,NUMERO_VUELTA, ma.ID_PILOTO, m.ID_SECTOR, pb.PARADA_DURACION, cn.POSICION
 
 CREATE TABLE [MANTECA].[BI_Incidente] (
 	id_incidente INT NOT NULL,
     id_sector INT NOT NULL,
     --id_carrera INT NOT NULL,
     id_auto INT NOT NULL,
-    --id_fecha INT NOT NULL,
-    tipo VARCHAR(255) NULL
+    id_fecha INT NOT NULL,
+    tipo VARCHAR(255) NULL,
+	nro_vuelta DECIMAL(18,0),
+	id_auto_incidentado INT NOT NULL,
     --PRIMARY KEY (id_sector, id_carrera, id_auto, id_fecha, id_piloto)
 );
 /*
@@ -238,90 +261,15 @@ ADD
 --FOREIGN KEY (id_piloto) REFERENCES [MANTECA].BI_piloto
 */
 INSERT INTO MANTECA.BI_Incidente 
-(id_incidente, id_sector, id_auto, tipo)
-SELECT i.ID_INCIDENTE, i.ID_SECTOR, ai.ID_AUTO, ai.ID_TIPO_INCIDENTE FROM MANTECA.Incidente i
-JOIN MANTECA.Auto_Incidentado ai ON ai.ID_INCIDENTE = i.ID_INCIDENTE
+(id_incidente, id_sector, id_auto, tipo,nro_vuelta,id_auto_incidentado,id_fecha)
+SELECT ai.ID_INCIDENTE, ai.ID_SECTOR, ai.ID_AUTO, ai.ID_TIPO_INCIDENTE , ai.NRO_VUELTA, ai.ID_AUTO_INCIDENTADO, f.ID_FECHA FROM MANTECA.Auto_Incidentado ai
+--JOIN MANTECA.Auto_Incidentado ai ON ai.ID_INCIDENTE = i.ID_INCIDENTE
+JOIN MANTECA.BI_Fecha f ON f.FECHA_ANIO = YEAR(ai.carrera_fecha) AND f.FECHA_MES = MONTH(ai.carrera_fecha) AND f.FECHA_DIA = DAY(ai.carrera_fecha)
 --JOIN MANTECA.BI_Fecha f ON f.FECHA_ANIO = YEAR(m.FECHA_HORA) AND f.FECHA_MES = MONTH(m.FECHA_HORA) AND f.FECHA_DIA = DAY(m.FECHA_HORA)
 --JOIN MANTECA.Carrera c ON YEAR(CARRERA_FECHA_INICIO) = f.FECHA_ANIO AND MONTH(CARRERA_FECHA_INICIO) = f.FECHA_MES AND DAY(CARRERA_FECHA_INICIO) = f.FECHA_DIA
 
-/*
-CREATE PROCEDURE MANTECA.carga_BI_Fecha
-AS
-BEGIN
-WITH fecha (anio, mes, dia, cuatrimestre)
-AS
-(
-select (YEAR(CARRERA_FECHA_INICIO)) AS 'ANIO', MONTH(CARRERA_FECHA_INICIO), DAY(CARRERA_FECHA_INICIO), CASE MONTH(CARRERA_FECHA_INICIO)
-       WHEN '1' then '1'
-       WHEN '2' then '1'
-       WHEN '3' then '1'
-       WHEN '4' then '1'
-       WHEN '5' then '2'
-       WHEN '6'  then '2'
-       WHEN '7' then '2'
-       WHEN '8' then '2'
-       WHEN '9' then '3'
-       WHEN '10' then '3'
-       WHEN '11' then '3'
-       WHEN '12' then '3'
-     END  AS 'CUATRIMESTRE'
-     from MANTECA.Carrera
-    -- ORDER BY 1 ASC, 2 ASC
 
-UNION
-select DISTINCT (YEAR(CARRERA_FECHA_FIN)), MONTH(CARRERA_FECHA_FIN), DAY(CARRERA_FECHA_FIN), CASE MONTH(CARRERA_FECHA_FIN)
-       WHEN '1' then '1'
-       WHEN '2' then '1'
-       WHEN '3' then '1'
-       WHEN '4' then '1'
-       WHEN '5' then '2'
-       WHEN '6'  then '2'
-       WHEN '7' then '2'
-       WHEN '8' then '2'
-       WHEN '9' then '3'
-       WHEN '10' then '3'
-       WHEN '11' then '3'
-       WHEN '12' then '3'
-     END  AS 'CUATRIMESTRE'
-     from MANTECA.Carrera
-     --ORDER BY 1,2,3
-*/
-/*UNION
-select DISTINCT (YEAR(FECHA_HORA)), MONTH(FECHA_HORA), DAY(FECHA_HORA),CASE MONTH(FECHA_HORA)
-       WHEN '1' then '1'
-       WHEN '2' then '1'
-       WHEN '3' then '1'
-       WHEN '4' then '1'
-       WHEN '5' then '2'
-       WHEN '6'  then '2'
-       WHEN '7' then '2'
-       WHEN '8' then '2'
-       WHEN '9' then '3'
-       WHEN '10' then '3'
-       WHEN '11' then '3'
-       WHEN '12' then '3'
-     END  AS 'CUATRIMESTRE'
-     from MANTECA.Medicion
-*/
-/*
-)INSERT INTO [MANTECA].BI_Fecha (FECHA_ANIO,FECHA_MES,FECHA_DIA,FECHA_CUATRIMESTRE) SELECT distinct 
-    anio, mes,dia, cuatrimestre
-    from fecha
-     ORDER BY anio, mes,dia, cuatrimestre
- END;
-GO
 
-EXECUTE [GD1C2022].[MANTECA].carga_BI_Fecha;
-GO
-
-CREATE VIEW mejor_tiempo_vuelta AS
-SELECT id_circuito, 
-min ((SELECT max(tiempo_de_vuelta) FROM BI_Medicion 
-
-GROUP BY id_circuito, nro_vuelta, id_escuderia))
-FROM BI_Medicion
-GROUP BY id_circuito, nro_vuelta, id_escuderia
-*/
 
 --VISTAS--
 
@@ -350,6 +298,13 @@ potencia. */
 El mejor tiempo está dado por el mínimo tiempo en que un auto logra
 realizar una vuelta de un circuito.*/
 
+CREATE VIEW mejor_tiempo_vuelta AS
+SELECT id_circuito, 
+min ((SELECT max(tiempo_de_vuelta) FROM BI_Medicion 
+
+GROUP BY id_circuito, nro_vuelta, id_escuderia))
+FROM BI_Medicion
+GROUP BY id_circuito, nro_vuelta, id_escuderia
 
 
 /*
