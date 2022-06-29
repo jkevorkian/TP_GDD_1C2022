@@ -87,6 +87,10 @@ CREATE TABLE [MANTECA].[BI_Medicion_Caja_De_Cambios]
 	)
 GO	
 
+INSERT INTO MANTECA.BI_Caja_de_cambios
+(id_caja_cambio, nombre, modelo, nro_serie)
+SELECT C.ID_CAJA_CAMBIO, C.CAJA_CAMBIO_NOMBRE, C.CAJA_CAMBIO_MODELO, C.NRO_SERIE FROM MANTECA.Caja_de_cambios C
+
 CREATE TABLE [MANTECA].[BI_Auto_Incidentado]
 	(
 	[ID_AUTO_INCIDENTADO] int NOT NULL,
