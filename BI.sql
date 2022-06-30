@@ -95,16 +95,6 @@ INSERT INTO MANTECA.BI_Caja_de_cambios
 (id_caja_cambio, modelo, nro_serie)
 SELECT C.ID_CAJA_CAMBIO, C.CAJA_CAMBIO_MODELO, C.NRO_SERIE FROM MANTECA.Caja_de_cambios C
 
-CREATE TABLE [MANTECA].[BI_Tipo_incidente] (
-    id_tipo_incidente INT NOT NULL,
-    tipo VARCHAR(255) NOT NULL,
-    PRIMARY KEY (id_tipo_incidente)
-);
-
-INSERT INTO MANTECA.BI_Tipo_incidente
-(id_tipo_incidente, tipo)
-SELECT T.ID_TIPO_INCIDENTE, T.TIPO_INCIDENTE FROM MANTECA.Tipo_Incidente T
-
 CREATE TABLE [MANTECA].[BI_Fecha] (
 	ID_FECHA int NOT NULL IDENTITY (1, 1) CONSTRAINT PK_Fecha PRIMARY KEY,
 	FECHA_ANIO INT,
