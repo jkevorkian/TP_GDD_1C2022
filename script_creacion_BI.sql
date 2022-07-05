@@ -286,7 +286,7 @@ toma la diferencia de mm del mismo entre la medición inicial y final de
 cada vuelta. Lo mismo aplica para el desgaste de frenos.
 Para el cálculo del desgaste del motor se toma en cuenta la perdida de
 potencia. */
-
+GO
 CREATE VIEW [MANTECA].[desgaste] (id_auto,id_circuito,nro_vuelta, desgaste_motor, desgaste_neumaticos, desgaste_frenos, desgaste_caja) AS
 SELECT m.id_auto,
 	   c.id_circuito,
@@ -310,7 +310,7 @@ El mejor tiempo está dado por el mínimo tiempo en que un auto logra
 realizar una vuelta de un circuito.*/
 
 
-
+GO
 CREATE VIEW [MANTECA].[mejor_tiempo_vuelta] (id_escuderia,tiempo,id_circuito,anio) AS
 SELECT  a.id_escuderia, MIN(m.tiempo_de_vuelta),s.id_circuito, f.FECHA_ANIO FROM MANTECA.BI_Medicion m
 JOIN MANTECA.BI_Auto a ON a.id_auto = m.id_auto
@@ -318,7 +318,7 @@ JOIN MANTECA.BI_Sector s ON s.id_sector = m.id_sector
 JOIN MANTECA.BI_Fecha f ON f.ID_FECHA = m.id_fecha
 WHERE m.distancia_recorrida_en_vuelta = 150
 GROUP BY a.id_escuderia, s.id_circuito , f.FECHA_ANIO
-
+GO
 
 /*Los 3 de circuitos con mayor consumo de combustible promedio.*/
 
@@ -328,17 +328,17 @@ SELECT TOP 3 s.id_circuito, avg(combustible) FROM MANTECA.BI_Medicion m
 JOIN MANTECA.BI_Sector s ON s.id_sector = m.id_sector
 GROUP BY s.id_circuito
 ORDER BY avg(combustible) desc
-
+GO
 /*
  Máxima velocidad alcanzada por cada auto en cada tipo de sector de cada
 circuito.12*/
-
+GO
 CREATE VIEW [MANTECA].[maxima_velocidad_x_auto_x_sector_x_circuito]
 (maxima_velocidad, auto, sector, circuito) AS
 SELECT max(velocidad), id_auto, s.tipo, id_circuito FROM MANTECA.BI_Medicion m
 JOIN MANTECA.BI_Sector s ON s.id_sector = m.id_sector
 GROUP BY id_auto, s.tipo, id_circuito
-
+GO
 /*
  Tiempo promedio que tardó cada escudería en las paradas por cuatrimestre.*/
 
@@ -348,7 +348,7 @@ SELECT avg(duracion), id_escuderia, FECHA_CUATRIMESTRE FROM MANTECA.BI_Parada_en
 JOIN MANTECA.BI_Auto a ON a.id_auto = p.id_auto
 JOIN MANTECA.BI_Fecha f ON f.ID_FECHA = p.id_fecha
 GROUP BY id_escuderia, FECHA_CUATRIMESTRE
-
+GO
 /*
  Cantidad de paradas por circuito por escudería por año.*/
 
@@ -359,7 +359,7 @@ JOIN MANTECA.BI_Carrera c ON c.id_carrera = p.id_carrera
 JOIN MANTECA.BI_Auto a ON a.id_auto = p.id_auto
 JOIN MANTECA.BI_Fecha f ON f.ID_FECHA = p.id_fecha
 GROUP BY id_circuito, id_escuderia, FECHA_ANIO
-
+GO
 /*
  Los 3 circuitos donde se consume mayor cantidad en tiempo de paradas en
 boxes.*/
@@ -370,7 +370,7 @@ SELECT TOP 3 id_circuito, sum(duracion) FROM MANTECA.BI_Parada_en_box p
 JOIN MANTECA.BI_Carrera c ON c.id_carrera = p.id_carrera
 GROUP BY id_circuito
 ORDER BY sum(duracion) desc
-
+GO
 /*
  Los 3 circuitos más peligrosos del año, en función mayor cantidad de
 incidentes.*/
@@ -381,7 +381,7 @@ SELECT TOP 3 id_circuito, count(id_incidente) FROM MANTECA.BI_Incidente i
 JOIN MANTECA.BI_Sector s ON s.id_sector = i.id_sector
 GROUP BY id_circuito
 ORDER BY count(id_incidente) DESC
-
+GO
 /*
  Promedio de incidentes que presenta cada escudería por año en los
 distintos tipo de sectores
