@@ -1,99 +1,78 @@
 USE [GD1C2022]
 CREATE TABLE [MANTECA].[BI_Auto] (
     id_auto INT NOT NULL,
-    nro_auto INT NOT NULL,
-    modelo VARCHAR(255) NOT NULL,
-    escuderia_nombre VARCHAR(255) NOT NULL,
-    escuderia_nacionalidad VARCHAR(255) NOT NULL,
 	id_escuderia INT NOT NULL,
     PRIMARY KEY (id_auto)
 );
 
 INSERT INTO MANTECA.BI_Auto
-(id_auto, nro_auto, modelo, escuderia_nombre, escuderia_nacionalidad, id_escuderia)
-SELECT a.ID_AUTO, a.AUTO_NUMERO, a.AUTO_MODELO, e.ESCUDERIA_NOMBRE, e.ESCUDERIA_NACIONALIDAD, a.ID_ESCUDERIA
+(id_auto, id_escuderia)
+SELECT a.ID_AUTO, a.ID_ESCUDERIA
 FROM MANTECA.Auto a
 JOIN MANTECA.Escuderia e ON e.ID_ESCUDERIA = a.ID_ESCUDERIA
 
 CREATE TABLE [MANTECA].[BI_Piloto] (
     id_piloto INT NOT NULL,
-    nombre VARCHAR(50) NOT NULL,
-    apellido VARCHAR(50) NOT NULL,
-    nacionalidad VARCHAR(50) NOT NULL,
-    fecha_nacimiento DATE NOT NULL,
     PRIMARY KEY (id_piloto),
 );
 
 INSERT INTO MANTECA.BI_Piloto
-(id_piloto, nombre, apellido, nacionalidad, fecha_nacimiento)
-SELECT P.ID_PILOTO, P.PILOTO_NOMBRE, P.PILOTO_APELLIDO, P.PILOTO_NACIONALIDAD, P.PILOTO_FECHA_NACIMIENTO FROM MANTECA.PILOTO P
+(id_piloto)
+SELECT P.ID_PILOTO FROM MANTECA.PILOTO P
 
 CREATE TABLE [MANTECA].[BI_Carrera] (
     id_carrera INT NOT NULL,
     fecha_inicio DATE NOT NULL,
-    vueltas_totales INT NOT NULL,
-    clima VARCHAR(100) NOT NULL,
-    longitud DECIMAL(18,2) NOT NULL,
-    circuito_nombre VARCHAR(255) NOT NULL,
-    circuito_pais VARCHAR(255) NOT NULL,
 	id_circuito INT NOT NULL,
     PRIMARY KEY (id_carrera)
 );
 
 INSERT INTO MANTECA.BI_Carrera
-(id_carrera,fecha_inicio,vueltas_totales,clima,longitud,circuito_nombre, circuito_pais, id_circuito)
-SELECT ID_CARRERA,CARRERA_FECHA_INICIO,VUELTAS_TOTAL,CARRERA_CLIMA,CARRERA_LONGITUD,CIRCUITO_NOMBRE, CIRCUITO_PAIS, ca.ID_CIRCUITO FROM MANTECA.Carrera ca
+(id_carrera,fecha_inicio, id_circuito)
+SELECT ID_CARRERA,CARRERA_FECHA_INICIO, ca.ID_CIRCUITO FROM MANTECA.Carrera ca
 JOIN MANTECA.Circuito c ON c.ID_CIRCUITO = ca.ID_CIRCUITO
 
 
 CREATE TABLE [MANTECA].[BI_Sector] (
     id_sector INT NOT NULL,
-    longitud DECIMAL(18,2) NOT NULL,
-    tipo VARCHAR(255) NOT NULL,
-    circuito_nombre VARCHAR(255) NOT NULL,
-    circuito_pais VARCHAR(255) NOT NULL,
+	tipo VARCHAR(255) NOT NULL,
 	id_circuito INT NOT NULL,
     PRIMARY KEY (id_sector)
 );
 
 INSERT INTO MANTECA.BI_Sector
-(id_sector, longitud, tipo, circuito_nombre, circuito_pais, id_circuito)
-SELECT ID_SECTOR, SECTOR_LONGITUD, SECTOR_TIPO, CIRCUITO_NOMBRE, CIRCUITO_PAIS, s.ID_CIRCUITO
+(id_sector, tipo, id_circuito)
+SELECT ID_SECTOR, SECTOR_TIPO, s.ID_CIRCUITO
 FROM MANTECA.Sector s
 JOIN MANTECA.Circuito c ON s.ID_CIRCUITO = c.ID_CIRCUITO
 
 CREATE TABLE [MANTECA].[BI_Motor] (
     id_motor INT NOT NULL,
-    modelo VARCHAR(255) NOT NULL,
-    nro_serie VARCHAR(255) NOT NULL,
     PRIMARY KEY (id_motor)
 );
 
 INSERT INTO MANTECA.BI_Motor
-(id_motor, modelo, nro_serie)
-SELECT ID_MOTOR, MODELO, NRO_SERIE FROM MANTECA.Motor
+(id_motor)
+SELECT ID_MOTOR FROM MANTECA.Motor
 
 CREATE TABLE [MANTECA].[BI_Neumatico] (
     id_neumático INT NOT NULL,
-    tipo VARCHAR(255) NOT NULL,
-    nro_serie VARCHAR(255) NOT NULL,
+	tipo VARCHAR(255) NOT NULL,
     PRIMARY KEY (id_neumático)
 );
 
 INSERT INTO MANTECA.BI_Neumatico
-(id_neumático, tipo, nro_serie)
-SELECT ID_NEUMATICO, NEUMATICO_TIPO, NRO_SERIE FROM MANTECA.Neumatico
+(id_neumático, tipo)
+SELECT ID_NEUMATICO, NEUMATICO_TIPO FROM MANTECA.Neumatico
 
 CREATE TABLE [MANTECA].[BI_Caja_de_cambios] (
     id_caja_cambio INT NOT NULL,
-    modelo VARCHAR(50) NOT NULL,
-    nro_serie VARCHAR(255) NOT NULL,
     PRIMARY KEY (id_caja_cambio)
 );
 
 INSERT INTO MANTECA.BI_Caja_de_cambios
-(id_caja_cambio, modelo, nro_serie)
-SELECT C.ID_CAJA_CAMBIO, C.CAJA_CAMBIO_MODELO, C.NRO_SERIE FROM MANTECA.Caja_de_cambios C
+(id_caja_cambio)
+SELECT C.ID_CAJA_CAMBIO FROM MANTECA.Caja_de_cambios C
 
 CREATE TABLE [MANTECA].[BI_Tipo_incidente] (
     id_tipo_incidente INT NOT NULL,
@@ -134,14 +113,13 @@ ORDER BY 1, 2, 3, 4
 
 CREATE TABLE [MANTECA].[BI_Freno] (
     id_freno INT NOT NULL,
-    nro_serie VARCHAR(255) NOT NULL,
     tamanio_disco DECIMAL(18,2) NOT NULL,
     PRIMARY KEY (id_freno)
 );
 
 INSERT INTO MANTECA.BI_freno
-(id_freno,nro_serie,tamanio_disco)
-SELECT ID_FRENO,NRO_SERIE,TAMANIO_DISCO FROM MANTECA.Freno f
+(id_freno,tamanio_disco)
+SELECT ID_FRENO,TAMANIO_DISCO FROM MANTECA.Freno f
 
 CREATE TABLE [MANTECA].[BI_Medicion] (
     id_medicion INTEGER NOT NULL,
@@ -155,26 +133,26 @@ CREATE TABLE [MANTECA].[BI_Medicion] (
     id_carrera INT NOT NULL,
     id_freno INT NOT NULL,
     combustible DECIMAL(18,2) NOT NULL,
-    distancia_recorrida_en_carrera DECIMAL(18,6) NOT NULL,
+    --distancia_recorrida_en_carrera DECIMAL(18,6) NOT NULL,
     nro_vuelta DECIMAL(18,0) NOT NULL,
     distancia_recorrida_en_vuelta DECIMAL(18,2) NOT NULL,
-    posicion DECIMAL(18,0) NOT NULL,
+    --posicion DECIMAL(18,0) NOT NULL,
     velocidad DECIMAL(18,2) NOT NULL,
     tiempo_de_vuelta DECIMAL(18,10) NOT NULL,
     motor_potencia_momentanea DECIMAL(18,6) NOT NULL,
-    motor_temp_aceite DECIMAL(18,6) NOT NULL,
-    motor_temp_agua DECIMAL(18,6) NOT NULL,
-    motor_rpm DECIMAL(18,6) NOT NULL,
+    --motor_temp_aceite DECIMAL(18,6) NOT NULL,
+    --motor_temp_agua DECIMAL(18,6) NOT NULL,
+    --motor_rpm DECIMAL(18,6) NOT NULL,
     neumatico_profundidad DECIMAL(18,6) NOT NULL,
-    neumatico_presion DECIMAL(18,6) NOT NULL,
-    neumatico_temperatura DECIMAL(18,6) NOT NULL,
+    --neumatico_presion DECIMAL(18,6) NOT NULL,
+    --neumatico_temperatura DECIMAL(18,6) NOT NULL,
 	neumatico_posicion nvarchar(255) NOT NULL,
     freno_grosor_pastilla DECIMAL(18,2) NOT NULL,
-    freno_temperatura DECIMAL(18,2) NOT NULL,
+    --freno_temperatura DECIMAL(18,2) NOT NULL,
 	freno_posicion nvarchar(255) NOT NULL,
-    caja_de_cambios_caja VARCHAR(255) NOT NULL,
-    caja_de_cambios_temperatura_aceite DECIMAL(18,2) NOT NULL,
-    caja_de_cambios_rpm DECIMAL(18,2) NOT NULL,
+    --caja_de_cambios_caja VARCHAR(255) NOT NULL,
+    --caja_de_cambios_temperatura_aceite DECIMAL(18,2) NOT NULL,
+    --caja_de_cambios_rpm DECIMAL(18,2) NOT NULL,
     caja_de_cambios_desgaste_porcentual_acumulado DECIMAL(18,2) NOT NULL,
     PRIMARY KEY (id_medicion)
 );
@@ -192,12 +170,12 @@ FOREIGN KEY (id_carrera) REFERENCES [MANTECA].BI_Carrera,
 FOREIGN KEY (id_freno) REFERENCES [MANTECA].BI_Freno
 
 INSERT INTO MANTECA.BI_Medicion
-(id_fecha, id_medicion, id_motor, id_neumatico, id_caja_de_cambios, id_piloto, id_auto, id_sector, id_carrera, id_freno, combustible, distancia_recorrida_en_carrera, nro_vuelta, distancia_recorrida_en_vuelta, 
-posicion, velocidad, tiempo_de_vuelta, motor_potencia_momentanea, motor_temp_aceite, motor_temp_agua, motor_rpm, neumatico_profundidad, neumatico_presion, neumatico_temperatura, neumatico_posicion, freno_grosor_pastilla,
-freno_temperatura, freno_posicion, caja_de_cambios_caja, caja_de_cambios_temperatura_aceite, caja_de_cambios_rpm, caja_de_cambios_desgaste_porcentual_acumulado)
-SELECT f.ID_FECHA, m.ID_MEDICION, ID_MOTOR, ID_NEUMATICO, ID_CAJA_CAMBIO, ID_PILOTO, m.ID_AUTO, ID_SECTOR, m.ID_CARRERA, ID_FRENO, COMBUSTIBLE, DISTANCIA_RECORRIDA_CARRERA, VUELTA_NUMERO, DISTANCIA_RECORRIDA_VUELTA,
-ma.POSICION, VELOCIDAD, TIEMPO_DE_VUELTA, POTENCIA_MOMENTANEA, mm.TEMP_ACEITE, mm.TEMP_AGUA, mm.RPM, mn.PROFUNDIDAD, mn.PRESION, mn.TEMPERATURA, mn.POSICION, mf.GROSOR_PASTILLA,
-mf.TEMPERATURA, mf.POSICION, mc.CAJA, mc.TEMPERATURA_ACEITE, mc.RPM, mc.DESGASTE_PORCENTUAL_ACUMULADO FROM MANTECA.Medicion m
+(id_fecha, id_medicion, id_motor, id_neumatico, id_caja_de_cambios, id_piloto, id_auto, id_sector, id_carrera, id_freno, combustible, nro_vuelta, distancia_recorrida_en_vuelta, 
+ velocidad, tiempo_de_vuelta, motor_potencia_momentanea, neumatico_profundidad, neumatico_posicion, freno_grosor_pastilla,
+ freno_posicion, caja_de_cambios_desgaste_porcentual_acumulado)
+SELECT f.ID_FECHA, m.ID_MEDICION, ID_MOTOR, ID_NEUMATICO, ID_CAJA_CAMBIO, ID_PILOTO, m.ID_AUTO, ID_SECTOR, m.ID_CARRERA, ID_FRENO, COMBUSTIBLE, VUELTA_NUMERO, DISTANCIA_RECORRIDA_VUELTA,
+VELOCIDAD, TIEMPO_DE_VUELTA, POTENCIA_MOMENTANEA, mn.PROFUNDIDAD, mn.POSICION, mf.GROSOR_PASTILLA,
+mf.POSICION, mc.DESGASTE_PORCENTUAL_ACUMULADO FROM MANTECA.Medicion m
 JOIN MANTECA.Medicion_Auto ma ON m.ID_MEDICION = ma.ID_MEDICION
 JOIN MANTECA.Medicion_Caja_De_Cambios mc ON m.ID_MEDICION = mc.ID_MEDICION
 JOIN MANTECA.Medicion_Frenos mf ON m.ID_MEDICION = mf.ID_MEDICION
@@ -205,7 +183,6 @@ JOIN MANTECA.Medicion_Motor mm ON m.ID_MEDICION = mm.ID_MEDICION
 JOIN MANTECA.Medicion_Neumatico mn ON m.ID_MEDICION = mn.ID_MEDICION
 JOIN MANTECA.BI_Carrera c ON c.id_carrera = m.ID_CARRERA
 JOIN MANTECA.BI_Fecha f ON f.FECHA_ANIO = YEAR(c.fecha_inicio) AND f.FECHA_MES = MONTH(c.fecha_inicio) AND f.FECHA_DIA = DAY(c.fecha_inicio)
-
 
 CREATE TABLE [MANTECA].[BI_Parada_en_box] (
 	id_parada INT,--PRIMARY KEY,
@@ -257,8 +234,8 @@ FOREIGN KEY (id_auto) REFERENCES [MANTECA].BI_Auto,
 FOREIGN KEY (id_fecha) REFERENCES [MANTECA].BI_Fecha
 
 INSERT INTO MANTECA.BI_Incidente 
-(id_incidente, id_sector, id_auto, tipo,nro_vuelta,id_auto_incidentado,id_fecha)
-SELECT ai.ID_INCIDENTE, ai.ID_SECTOR, ai.ID_AUTO, ai.ID_TIPO_INCIDENTE , ai.NRO_VUELTA, ai.ID_AUTO_INCIDENTADO, f.ID_FECHA FROM MANTECA.Auto_Incidentado ai
+(id_incidente, id_sector, id_auto, tipo, nro_vuelta,id_auto_incidentado,id_fecha)
+SELECT ai.ID_INCIDENTE, ai.ID_SECTOR, ai.ID_AUTO, ai.ID_TIPO_INCIDENTE, ai.NRO_VUELTA, ai.ID_AUTO_INCIDENTADO, f.ID_FECHA FROM MANTECA.Auto_Incidentado ai
 --JOIN MANTECA.Auto_Incidentado ai ON ai.ID_INCIDENTE = i.ID_INCIDENTE
 JOIN MANTECA.BI_Fecha f ON f.FECHA_ANIO = YEAR(ai.carrera_fecha) AND f.FECHA_MES = MONTH(ai.carrera_fecha) AND f.FECHA_DIA = DAY(ai.carrera_fecha)
 --JOIN MANTECA.BI_Fecha f ON f.FECHA_ANIO = YEAR(m.FECHA_HORA) AND f.FECHA_MES = MONTH(m.FECHA_HORA) AND f.FECHA_DIA = DAY(m.FECHA_HORA)
@@ -268,15 +245,6 @@ JOIN MANTECA.BI_Fecha f ON f.FECHA_ANIO = YEAR(ai.carrera_fecha) AND f.FECHA_MES
 
 
 --VISTAS--
-
-/* Vista modelo
-
-CREATE VIEW Nombre_vista 
-(codigo,apellido,nombre,estado) AS 
-SELECT etcetc
-
-*/
-
 
 /*
  Desgaste promedio de cada componente de cada auto por vuelta por
@@ -394,3 +362,4 @@ JOIN MANTECA.BI_Auto a ON a.id_auto = i.id_auto
 JOIN MANTECA.BI_Fecha f ON f.ID_FECHA = i.id_fecha
 JOIN MANTECA.BI_Sector s ON s.id_sector = i.id_sector
 GROUP BY id_escuderia, FECHA_ANIO, s.tipo
+GO
