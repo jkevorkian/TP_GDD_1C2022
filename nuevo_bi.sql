@@ -52,12 +52,12 @@ CREATE TABLE [MANTECA].[BI_Tipo_incidente] (
 
 CREATE TABLE [MANTECA].[BI_Parada_en_box] (
 	id_parada INT,
-    id_circuito INT  NULL,
-    id_auto INT  NULL,
-	id_escuderia INT NULL,
+    id_circuito INT NOT NULL,
+    id_auto INT NOT NULL,
+	id_escuderia INT NOT NULL,
     id_fecha INT NOT NULL,
     duracion DECIMAL(18,2)  NULL,
-    PRIMARY KEY (id_parada)
+    PRIMARY KEY (id_parada,id_circuito,id_auto,id_escuderia,id_fecha)
 );
 
 CREATE TABLE [MANTECA].[BI_Incidente] (
@@ -65,8 +65,31 @@ CREATE TABLE [MANTECA].[BI_Incidente] (
     id_tipo_sector INT NOT NULL,
 	id_escuderia INT NOT NULL,
     id_fecha INT NOT NULL,
-    id_tipo_incidente VARCHAR(255) NULL,
+    id_tipo_incidente INT NOT NULL,
+	PRIMARY KEY (id_circuito,id_tipo_sector,id_escuderia,id_fecha,id_tipo_incidente)
 );
+
+--CREATE TABLE [MANTECA].[BI_Medicion] ( --circuito,tiposector?,fecha,tipoNeumatico?????,escuderia,auto
+  --  id_fecha INT NULL,
+    --id_neumatico INT NOT NULL,
+    --id_escuderia INT NOT NULL,
+    --id_auto INT NOT NULL,
+    --id_tipo_sector INT NOT NULL,
+    --id_circuito INT NOT NULL,
+    --combustible DECIMAL(18,2) NOT NULL,
+    --nro_vuelta DECIMAL(18,0) NOT NULL,
+    --distancia_recorrida_en_vuelta DECIMAL(18,2) NOT NULL,
+    --velocidad DECIMAL(18,2) NOT NULL,
+    --tiempo_de_vuelta DECIMAL(18,10) NOT NULL,
+    --motor_potencia_momentanea DECIMAL(18,6) NOT NULL,
+    --neumatico_profundidad DECIMAL(18,6) NOT NULL,
+	--neumatico_posicion nvarchar(255) NOT NULL,
+    --freno_grosor_pastilla DECIMAL(18,2) NOT NULL,
+	--freno_posicion nvarchar(255) NOT NULL,
+    --caja_de_cambios_desgaste_porcentual_acumulado DECIMAL(18,2) NOT NULL,
+    --PRIMARY KEY (id_medicion)
+--);
+
 
 ALTER TABLE [MANTECA].[BI_Parada_en_box]
 ADD
@@ -78,7 +101,6 @@ ALTER TABLE [MANTECA].[BI_Incidente]
 ADD
 FOREIGN KEY (id_tipo_sector) REFERENCES [MANTECA].BI_Tipo_Sector,
 FOREIGN KEY (id_circuito) REFERENCES [MANTECA].BI_Circuito,
-FOREIGN KEY (id_auto) REFERENCES [MANTECA].BI_Auto,
 FOREIGN KEY (id_escuderia) REFERENCES [MANTECA].BI_Escuderia,
 FOREIGN KEY (id_fecha) REFERENCES [MANTECA].BI_Fecha,
 FOREIGN KEY (id_tipo_incidente) REFERENCES [MANTECA].BI_Tipo_incidente
@@ -145,7 +167,7 @@ JOIN MANTECA.BI_Fecha f ON f.FECHA_ANIO = YEAR(c.fecha_inicio) AND f.FECHA_MES =
 GROUP BY pb.ID_PARADA, pb.ID_AUTO, pb.PARADA_DURACION, f.ID_FECHA,pb.ID_CIRCUITO,a.id_escuderia
 
 INSERT INTO MANTECA.BI_Incidente 
-( id_circuito, id_tipo_sector, id_auto,id_escuderia, id_fecha,id_tipo_incidente)
+( id_circuito, id_tipo_sector,id_escuderia, id_fecha,id_tipo_incidente)
 SELECT s.ID_CIRCUITO ,ts.id_tipo_sector, a.id_escuderia,  f.ID_FECHA, bti.id_tipo_incidente  
 FROM MANTECA.Auto_Incidentado ai
 JOIN MANTECA.BI_Auto a ON ai.ID_AUTO = a.id_auto
