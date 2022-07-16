@@ -70,7 +70,8 @@ CREATE TABLE [MANTECA].[BI_Incidente] (
 );
 
 CREATE TABLE [MANTECA].[BI_Medicion] ( 
-    id_fecha INT not NULL,
+    id_medicion INT IDENTITY(1,1) NOT NULL,
+	id_fecha INT not NULL,
     id_escuderia INT NOT NULL,
     id_auto INT NOT NULL,
     id_circuito INT NOT NULL,
@@ -90,7 +91,7 @@ CREATE TABLE [MANTECA].[BI_Medicion] (
     frenoDelIzq_desgaste DECIMAL (18,2) NULL,
 	frenoTraDer_desgaste DECIMAL (18,2) NULL,
 	frenoTraIzq_desgaste DECIMAL (18,2) NULL,
-	--PRIMARY KEY (id_fecha,id_escuderia,id_auto,id_circuito)
+	PRIMARY KEY (id_medicion)
 );
 
 ALTER TABLE [MANTECA].[BI_Medicion]
