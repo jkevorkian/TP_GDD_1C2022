@@ -69,35 +69,27 @@ CREATE TABLE [MANTECA].[BI_Incidente] (
 	PRIMARY KEY (id_circuito,id_tipo_sector,id_escuderia,id_fecha,id_tipo_incidente)
 );
 
-CREATE TABLE [MANTECA].[BI_Medicion] ( --circuito,tiposector?,fecha,tipoNeumatico?????,escuderia,auto
+CREATE TABLE [MANTECA].[BI_Medicion] ( 
     id_fecha INT not NULL,
-    --id_neumatico INT NOT NULL,
     id_escuderia INT NOT NULL,
     id_auto INT NOT NULL,
-    --id_tipo_sector INT NOT NULL,
     id_circuito INT NOT NULL,
     combustible DECIMAL(18,2) NOT NULL,
-    --nro_vuelta DECIMAL(18,0) NOT NULL,
-    --distancia_recorrida_en_vuelta DECIMAL(18,2) NOT NULL,
     maxVelocidadFrenada DECIMAL(18,2) NOT NULL,
 	maxVelocidadCurva DECIMAL(18,2) NOT NULL,
 	maxVelocidadRecta DECIMAL(18,2) NOT NULL,
-	vuelta_numero DECIMAL(18,10) NOT NULL,
+	vuelta_numero DECIMAL(18,0) NOT NULL,
     tiempo_de_vuelta DECIMAL(18,10) NOT NULL,
-    motor_potencia_momentanea DECIMAL(18,6) NOT NULL,
-    --neumatico_profundidad DECIMAL(18,6) NOT NULL,
-	--neumatico_posicion nvarchar(255) NOT NULL,
-    --freno_grosor_pastilla DECIMAL(18,2) NOT NULL,
-	--freno_posicion nvarchar(255) NOT NULL,
+    motor_desgaste DECIMAL(18,6) NOT NULL,
     caja_de_cambios_desgaste_porcentual_acumulado DECIMAL(18,2) NOT NULL,
-	neum1_desgaste DECIMAL (18,2) NULL,
-	neum2_desgaste DECIMAL (18,2) NULL,
-	neum3_desgaste DECIMAL (18,2) NULL,
-	neum4_desgaste DECIMAL (18,2) NULL,
-	freno1_desgaste DECIMAL (18,2) NULL,
-    freno2_desgaste DECIMAL (18,2) NULL,
-	freno3_desgaste DECIMAL (18,2) NULL,
-	freno4_desgaste DECIMAL (18,2) NULL,
+	neumDelDer_desgaste DECIMAL (18,2) NULL,
+	neumDelIzq_desgaste DECIMAL (18,2) NULL,
+	neumTraDer_desgaste DECIMAL (18,2) NULL,
+	neumTraIzq_desgaste DECIMAL (18,2) NULL,
+	frenoDelDer_desgaste DECIMAL (18,2) NULL,
+    frenoDelIzq_desgaste DECIMAL (18,2) NULL,
+	frenoTraDer_desgaste DECIMAL (18,2) NULL,
+	frenoTraIzq_desgaste DECIMAL (18,2) NULL,
 	--PRIMARY KEY (id_fecha,id_escuderia,id_auto,id_circuito)
 );
 
@@ -106,7 +98,6 @@ ADD
 FOREIGN KEY (id_fecha) REFERENCES [MANTECA].BI_Fecha,
 FOREIGN KEY (id_escuderia) REFERENCES [MANTECA].BI_Escuderia,
 FOREIGN KEY (id_auto) REFERENCES [MANTECA].BI_Auto,
---FOREIGN KEY (id_tipo_sector) REFERENCES [MANTECA].BI_Tipo_Sector,
 FOREIGN KEY (id_circuito) REFERENCES [MANTECA].BI_Circuito
  	
 ALTER TABLE [MANTECA].[BI_Parada_en_box]
@@ -197,7 +188,7 @@ JOIN MANTECA.BI_Fecha f ON f.FECHA_ANIO = YEAR(ai.carrera_fecha) AND f.FECHA_MES
 GROUP BY s.ID_CIRCUITO,ts.id_tipo_sector,a.id_escuderia,f.ID_FECHA,bti.id_tipo_incidente
 
 INSERT INTO MANTECA.BI_Medicion
-(id_fecha, id_escuderia, id_auto, id_circuito, combustible, maxVelocidadFrenada, maxVelocidadCurva, maxVelocidadRecta, vuelta_numero, tiempo_de_vuelta, motor_potencia_momentanea, caja_de_cambios_desgaste_porcentual_acumulado)
+(id_fecha, id_escuderia, id_auto, id_circuito, combustible, maxVelocidadFrenada, maxVelocidadCurva, maxVelocidadRecta, vuelta_numero, tiempo_de_vuelta, motor_desgaste, caja_de_cambios_desgaste_porcentual_acumulado)
 SELECT DISTINCT F.id_fecha,
 	   BA.id_escuderia,
 	   BA.id_auto,
@@ -205,10 +196,7 @@ SELECT DISTINCT F.id_fecha,
 	   ((SELECT COMBUSTIBLE FROM MANTECA.Medicion_Auto MA2
 		left JOIN MANTECA.Medicion MI ON MI.ID_MEDICION=MA2.ID_MEDICION
 		WHERE MA2.DISTANCIA_RECORRIDA_VUELTA=0 AND MA2.ID_AUTO=M.ID_AUTO AND MA2.VUELTA_NUMERO=MA.VUELTA_NUMERO AND MI.ID_CARRERA=M.ID_CARRERA
-		GROUP BY COMBUSTIBLE, ma2.ID_AUTO, VUELTA_NUMERO)-COMBUSTIBLE/*(SELECT COMBUSTIBLE FROM MANTECA.Medicion_Auto MA3
-														   LEFT JOIN MANTECA.Medicion MF ON MF.ID_MEDICION=MA3.ID_MEDICION
-													       WHERE MA3.DISTANCIA_RECORRIDA_VUELTA=149 AND MA3.ID_AUTO=M.ID_AUTO AND MA3.VUELTA_NUMERO=MA.VUELTA_NUMERO AND MF.ID_CARRERA=M.ID_CARRERA
-														   GROUP BY COMBUSTIBLE, MA3.ID_AUTO, VUELTA_NUMERO)*/) AS 'CONSUMO COMBUSTIBLE POR VUELTA',
+		GROUP BY COMBUSTIBLE, ma2.ID_AUTO, VUELTA_NUMERO)-COMBUSTIBLE) AS 'CONSUMO COMBUSTIBLE POR VUELTA',
 	   (SELECT MAX(VELOCIDAD) FROM MANTECA.Medicion_Auto MVF
 	    JOIN MANTECA.MEDICION MF ON MF.ID_MEDICION=MVF.ID_MEDICION
 		WHERE MVF.ID_AUTO=M.ID_AUTO AND MVF.VUELTA_NUMERO=MA.VUELTA_NUMERO AND MF.ID_SECTOR IN (SELECT ID_SECTOR FROM MANTECA.SECTOR WHERE SECTOR_TIPO='Frenada')) as 'Velocidad Frenada',
@@ -224,22 +212,17 @@ SELECT DISTINCT F.id_fecha,
 		LEFT JOIN MANTECA.Medicion MI ON MI.ID_MEDICION=MM.ID_MEDICION
 		LEFT JOIN MANTECA.Medicion_Auto MAI ON MM.ID_MEDICION=MAI.ID_MEDICION
 		WHERE MAI.DISTANCIA_RECORRIDA_VUELTA=0 AND MAI.ID_AUTO=M.ID_AUTO AND MAI.VUELTA_NUMERO=MA.VUELTA_NUMERO AND MI.ID_CARRERA=M.ID_CARRERA
-		GROUP BY POTENCIA_MOMENTANEA, MAI.ID_AUTO, VUELTA_NUMERO)-(SELECT POTENCIA_MOMENTANEA FROM MANTECA.Medicion_Motor MMF
-														   LEFT JOIN MANTECA.Medicion MF ON MF.ID_MEDICION=MMF.ID_MEDICION
-														   LEFT JOIN MANTECA.Medicion_Auto MAF ON MMF.ID_MEDICION=MAF.ID_MEDICION
-													       WHERE MAF.DISTANCIA_RECORRIDA_VUELTA=149 AND MAF.ID_AUTO=M.ID_AUTO AND MAF.VUELTA_NUMERO=MA.VUELTA_NUMERO AND MF.ID_CARRERA=M.ID_CARRERA
-														   GROUP BY POTENCIA_MOMENTANEA, MAF.ID_AUTO, VUELTA_NUMERO)) AS 'DESGASTE MOTOR POR VUELTA',
+		GROUP BY POTENCIA_MOMENTANEA, MAI.ID_AUTO, VUELTA_NUMERO)-POTENCIA_MOMENTANEA) AS 'DESGASTE MOTOR POR VUELTA',
 		MC.DESGASTE_PORCENTUAL_ACUMULADO
 FROM MANTECA.Medicion M
 JOIN MANTECA.BI_Auto BA ON M.id_auto=BA.id_auto
 JOIN MANTECA.BI_Circuito BC ON M.ID_CARRERA=BC.id_carrera
---JOIN MANTECA.Sector S ON S.ID_SECTOR=M.ID_SECTOR
---JOIN MANTECA.BI_Tipo_Sector TS ON TS.descripcion=S.SECTOR_TIPO
 JOIN MANTECA.BI_Fecha f ON f.FECHA_ANIO = YEAR(BC.fecha_inicio) AND f.FECHA_MES = MONTH(BC.fecha_inicio) AND f.FECHA_DIA = DAY(BC.fecha_inicio)
 JOIN MANTECA.Medicion_Auto MA ON MA.ID_MEDICION=M.ID_MEDICION
 JOIN MANTECA.Medicion_Caja_De_Cambios MC ON MC.ID_MEDICION=M.ID_MEDICION
+JOIN MANTECA.Medicion_Motor MOM ON MOM.ID_MEDICION=M.ID_MEDICION
 WHERE MA.DISTANCIA_RECORRIDA_VUELTA=149
-GROUP BY F.id_fecha, BA.id_escuderia, BA.id_auto, /*TS.id_tipo_sector,*/ BC.id_circuito, COMBUSTIBLE, M.ID_MEDICION,M.ID_AUTO,MA.VUELTA_NUMERO, M.ID_CARRERA, MA.TIEMPO_DE_VUELTA, MC.DESGASTE_PORCENTUAL_ACUMULADO
+GROUP BY F.id_fecha, BA.id_escuderia, BA.id_auto, BC.id_circuito, COMBUSTIBLE, POTENCIA_MOMENTANEA, M.ID_MEDICION,M.ID_AUTO,MA.VUELTA_NUMERO, M.ID_CARRERA, MA.TIEMPO_DE_VUELTA, MC.DESGASTE_PORCENTUAL_ACUMULADO
 ORDER BY 4 DESC ,3 DESC, 9 asc  
 
 --PROCEDURES CARGA DESGASTES NEUMATICOS Y FRENOS
@@ -261,7 +244,7 @@ FETCH NEXT FROM cursorDesgastes
 INTO @Desgaste, @auto, @circuito, @vuelta
 WHILE @@FETCH_STATUS = 0
 BEGIN
-UPDATE MANTECA.BI_Medicion SET neum1_desgaste=@Desgaste
+UPDATE MANTECA.BI_Medicion SET neumDelDer_desgaste=@Desgaste
 WHERE vuelta_numero=@vuelta and id_auto=@auto and id_circuito=@circuito
 FETCH NEXT FROM cursorDesgastes
 INTO @Desgaste, @auto, @circuito, @vuelta
@@ -288,7 +271,7 @@ FETCH NEXT FROM cursorDesgastes
 INTO @Desgaste, @auto, @circuito, @vuelta
 WHILE @@FETCH_STATUS = 0
 BEGIN
-UPDATE MANTECA.BI_Medicion SET neum2_desgaste=@Desgaste
+UPDATE MANTECA.BI_Medicion SET neumDelIzq_desgaste=@Desgaste
 WHERE vuelta_numero=@vuelta and id_auto=@auto and id_circuito=@circuito
 FETCH NEXT FROM cursorDesgastes
 INTO @Desgaste, @auto, @circuito, @vuelta
@@ -315,7 +298,7 @@ FETCH NEXT FROM cursorDesgastes
 INTO @Desgaste, @auto, @circuito, @vuelta
 WHILE @@FETCH_STATUS = 0
 BEGIN
-UPDATE MANTECA.BI_Medicion SET neum3_desgaste=@Desgaste
+UPDATE MANTECA.BI_Medicion SET neumTraDer_desgaste=@Desgaste
 WHERE vuelta_numero=@vuelta and id_auto=@auto and id_circuito=@circuito
 FETCH NEXT FROM cursorDesgastes
 INTO @Desgaste, @auto, @circuito, @vuelta
@@ -342,7 +325,7 @@ FETCH NEXT FROM cursorDesgastes
 INTO @Desgaste, @auto, @circuito, @vuelta
 WHILE @@FETCH_STATUS = 0
 BEGIN
-UPDATE MANTECA.BI_Medicion SET neum4_desgaste=@Desgaste
+UPDATE MANTECA.BI_Medicion SET neumTraIzq_desgaste=@Desgaste
 WHERE vuelta_numero=@vuelta and id_auto=@auto and id_circuito=@circuito
 FETCH NEXT FROM cursorDesgastes
 INTO @Desgaste, @auto, @circuito, @vuelta
@@ -370,7 +353,7 @@ FETCH NEXT FROM cursorDesgastes
 INTO @Desgaste, @auto, @circuito, @vuelta
 WHILE @@FETCH_STATUS = 0
 BEGIN
-UPDATE MANTECA.BI_Medicion SET freno1_desgaste=@Desgaste
+UPDATE MANTECA.BI_Medicion SET frenoDelDer_desgaste=@Desgaste
 WHERE vuelta_numero=@vuelta and id_auto=@auto and id_circuito=@circuito
 FETCH NEXT FROM cursorDesgastes
 INTO @Desgaste, @auto, @circuito, @vuelta
@@ -397,7 +380,7 @@ FETCH NEXT FROM cursorDesgastes
 INTO @Desgaste, @auto, @circuito, @vuelta
 WHILE @@FETCH_STATUS = 0
 BEGIN
-UPDATE MANTECA.BI_Medicion SET freno2_desgaste=@Desgaste
+UPDATE MANTECA.BI_Medicion SET frenoDelIzq_desgaste=@Desgaste
 WHERE vuelta_numero=@vuelta and id_auto=@auto and id_circuito=@circuito
 FETCH NEXT FROM cursorDesgastes
 INTO @Desgaste, @auto, @circuito, @vuelta
@@ -424,7 +407,7 @@ FETCH NEXT FROM cursorDesgastes
 INTO @Desgaste, @auto, @circuito, @vuelta
 WHILE @@FETCH_STATUS = 0
 BEGIN
-UPDATE MANTECA.BI_Medicion SET freno3_desgaste=@Desgaste
+UPDATE MANTECA.BI_Medicion SET frenoTraDer_desgaste=@Desgaste
 WHERE vuelta_numero=@vuelta and id_auto=@auto and id_circuito=@circuito
 FETCH NEXT FROM cursorDesgastes
 INTO @Desgaste, @auto, @circuito, @vuelta
@@ -451,7 +434,7 @@ FETCH NEXT FROM cursorDesgastes
 INTO @Desgaste, @auto, @circuito, @vuelta
 WHILE @@FETCH_STATUS = 0
 BEGIN
-UPDATE MANTECA.BI_Medicion SET freno4_desgaste=@Desgaste
+UPDATE MANTECA.BI_Medicion SET frenoTraIzq_desgaste=@Desgaste
 WHERE vuelta_numero=@vuelta and id_auto=@auto and id_circuito=@circuito
 FETCH NEXT FROM cursorDesgastes
 INTO @Desgaste, @auto, @circuito, @vuelta
@@ -470,16 +453,135 @@ EXEC CargaDesgastesFrenosDelIzq
 EXEC CargaDesgastesFrenosTraDer
 EXEC CargaDesgastesFrenosTraIzq
 
-/*
-DROP PROC CargaDesgastesNeumaticosDelDer
-DROP PROC CargaDesgastesNeumaticosDelIzq
-DROP PROC CargaDesgastesNeumaticosTraDer
-DROP PROC CargaDesgastesNeumaticosTraIzq
-DROP PROC CargaDesgastesFrenosDelDer
-DROP PROC CargaDesgastesFrenosDelIzq
-DROP PROC CargaDesgastesFrenosTraDer
-DROP PROC CargaDesgastesFrenosTraIzq
+--VISTAS
 
-SELECT * FROM MANTECA.BI_Medicion
-*/
+/* Desgaste promedio de cada componente de cada auto por vuelta por circuito. 
+Tener en cuenta que, para el cálculo del desgaste de los neumáticos, se 
+toma la diferencia de mm del mismo entre la medición inicial y final de 
+cada vuelta. Lo mismo aplica para el desgaste de frenos. 
+Para el cálculo del desgaste del motor se toma en cuenta la perdida de 
+potencia. */
+
+GO
+CREATE VIEW [MANTECA].[Desgaste] (id_auto, id_circuito, vuelta_numero, motor_desgaste, caja_de_cambios_desgaste_porcentual_acumulado, neumDelDer_desgaste, neumDelIzq_desgaste, neumTraDer_desgaste, neumTraIzq_desgaste, frenoDelDer_desgaste, frenoDelIzq_desgaste, frenoTraDer_desgaste, frenoTraIzq_desgaste) AS
+SELECT id_auto, id_circuito, vuelta_numero, motor_desgaste, caja_de_cambios_desgaste_porcentual_acumulado, neumDelDer_desgaste, neumDelIzq_desgaste, neumTraDer_desgaste, neumTraIzq_desgaste, frenoDelDer_desgaste, frenoDelIzq_desgaste, frenoTraDer_desgaste, frenoTraIzq_desgaste
+FROM MANTECA.BI_Medicion
+
+/*Mejor tiempo de vuelta de cada escudería por circuito por año. 
+El mejor tiempo está dado por el mínimo tiempo en que un auto logra 
+realizar una vuelta de un circuito. */
+
+GO
+CREATE VIEW [MANTECA].[Mejor_tiempo_vuelta_por_escuderia_por_circuito_por_anio] (id_circuito, id_escuderia, tiempo_de_vuelta, anio) AS
+SELECT id_circuito,
+	   id_escuderia,
+	   min(tiempo_de_vuelta),
+	   F.FECHA_ANIO  
+FROM MANTECA.BI_Medicion M
+JOIN MANTECA.BI_Fecha F ON M.id_fecha=F.ID_FECHA
+GROUP BY id_circuito, id_escuderia, F.FECHA_ANIO
+--order by 1,2
+
+/*Los 3 de circuitos con mayor consumo de combustible promedio.*/
+
+GO
+CREATE VIEW [MANTECA].[3_circuitos_mayor_consumo_combustible] (id_circuito, combustible_consumido) AS
+SELECT TOP 3 id_circuito,
+			 SUM(combustible)
+FROM MANTECA.BI_Medicion
+GROUP BY id_circuito
+ORDER BY 2 DESC
+
+/*Máxima velocidad alcanzada por cada auto en cada tipo de sector de cada 
+circuito.*/
+
+GO
+CREATE VIEW [MANTECA].[Max_vel_por_auto_en_cada_tipo_sector_en_cada_circuito] (id_auto, id_circuito, Max_vel_en_Curva, Max_vel_en_Frenada, Max_vel_en_Recta) AS
+SELECT id_auto,
+	   id_circuito,
+	   MAX(maxVelocidadCurva),
+	   max(maxVelocidadFrenada),
+	   max(maxVelocidadRecta)	
+FROM MANTECA.BI_Medicion
+GROUP BY id_auto, id_circuito
+--ORDER BY 1,2
+
+/* Tiempo promedio que tardó cada escudería en las paradas por cuatrimestre.*/
+
+GO
+CREATE VIEW [MANTECA].[Prom_escuderia_en_parada_por_cuatrimestre] (id_escuderia, promedio_duracion_en_boxes, cuatrimestre) AS
+SELECT id_escuderia,
+	   avg(duracion),
+	   F.FECHA_CUATRIMESTRE	
+FROM MANTECA.BI_Parada_en_box P
+JOIN MANTECA.BI_Fecha F ON F.ID_FECHA=P.id_fecha
+GROUP BY id_escuderia, F.FECHA_CUATRIMESTRE
+
+/* Cantidad de paradas por circuito por escudería por año. */
+
+GO
+CREATE VIEW [MANTECA].[cant_paradas_escuderia_por_anio] (id_escuderia, cantidad_paradas, anio) AS
+SELECT id_escuderia,
+	   count(*),
+	   F.FECHA_ANIO	
+FROM MANTECA.BI_Parada_en_box P
+JOIN MANTECA.BI_Fecha F ON F.ID_FECHA=P.id_fecha
+GROUP BY id_escuderia, F.FECHA_ANIO
+
+/* Los 3 circuitos donde se consume mayor cantidad en tiempo de paradas en 
+boxes. */
+
+GO
+CREATE VIEW [MANTECA].[3_circuitos_mayor_tiempo_paradas] (id_circuito, tiempo_en_paradas) AS
+SELECT TOP 3 id_circuito,
+	   SUM(duracion)	
+FROM MANTECA.BI_Parada_en_box 
+GROUP BY id_circuito
+ORDER BY 2 DESC
+
+/*Los 3 circuitos más peligrosos del año, en función mayor cantidad de 
+incidentes. */
+
+/*ESTA VISTA PIDE INFORMACION SOBRE LAS CARRERAS DEL ANIO Y NO HAY CARRERAS CORRIDAS EN 2022, ELEGIMOS SELECCIONAR EL ANIO MAS RECIENTE PARA ESTAS VISTAS
+ O SEA 2021 AUNQUE SE HAYA CORRIDO UNA SOLA CARRERA EN 2021.*/
+
+GO
+CREATE VIEW [MANTECA].[3_circuitos_mas_peligrosos_del_anio] (id_circuito, cant_incidentes, anio_carrera) AS
+SELECT TOP 3 id_circuito,
+	         count(*),
+			 F.FECHA_ANIO	
+FROM MANTECA.BI_Incidente I
+JOIN MANTECA.BI_Fecha F ON F.ID_FECHA=I.id_fecha
+WHERE F.FECHA_ANIO=(SELECT MAX(FECHA_ANIO) FROM MANTECA.BI_Fecha) 
+GROUP BY id_circuito, F.FECHA_ANIO
+ORDER BY 2 DESC
+
+/*Promedio de incidentes que presenta cada escudería por año en los 
+distintos tipo de sectores. */
+GO
+CREATE VIEW [MANTECA].[Promedio_incidentes_escuderia_por_anio_por_tipo_sector] (id_escuderia, id_tipo_de_sector , promedio_incidentes, anio) AS
+SELECT id_escuderia,
+	   id_tipo_sector,	
+       CONVERT(decimal(10,2),count(id_tipo_sector))/CONVERT(decimal(10,2),(SELECT count(*) FROM MANTECA.BI_Incidente IT
+							  JOIN MANTECA.BI_Fecha FT ON FT.ID_FECHA=IT.id_fecha
+							  WHERE FT.FECHA_ANIO=F.FECHA_ANIO AND IT.id_escuderia=I.id_escuderia
+							  GROUP BY IT.id_escuderia, FT.FECHA_ANIO)),/* ACA DIVIDO LA CANTIDAD DE INCIDENTES POR TIPO DE SECTOR DE LA ESCUDERIA POR ANIO 
+																		   POR LA CANTIDAD DE INCIDENTES TOTALES DE LA ESCUDERIA EN EL ANIO. DA TODO 1 PORQUE
+																		   TODOS LOS INCIDENTES FUERON EN EL MISMO TIPO DE SECTOR ENTONCES EL TOTAL DE INCIDENTES
+																		   ES IGUAL AL TOTAL DE INCIDENTES POR TIPO */
+       F.FECHA_ANIO	
+FROM MANTECA.BI_Incidente I
+JOIN MANTECA.BI_Fecha F ON F.ID_FECHA=I.id_fecha
+GROUP BY id_escuderia, id_tipo_sector , F.FECHA_ANIO
+GO
+
+SELECT * FROM MANTECA.Desgaste
+SELECT * FROM MANTECA.Mejor_tiempo_vuelta_por_escuderia_por_circuito_por_anio
+SELECT * FROM MANTECA.[3_circuitos_mayor_consumo_combustible]
+SELECT * FROM MANTECA.Max_vel_por_auto_en_cada_tipo_sector_en_cada_circuito
+SELECT * FROM MANTECA.Prom_escuderia_en_parada_por_cuatrimestre
+SELECT * FROM MANTECA.cant_paradas_escuderia_por_anio
+SELECT * FROM MANTECA.[3_circuitos_mayor_tiempo_paradas]
+SELECT * FROM MANTECA.[3_circuitos_mas_peligrosos_del_anio]
+SELECT * FROM MANTECA.Promedio_incidentes_escuderia_por_anio_por_tipo_sector
 
