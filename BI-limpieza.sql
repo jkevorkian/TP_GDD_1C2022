@@ -7,7 +7,6 @@ DROP TABLE [MANTECA].[BI_Carrera] --esta no estaba
 DROP TABLE [MANTECA].[BI_Circuito]
 DROP TABLE [MANTECA].[BI_Sector] --esta no estaba
 DROP TABLE [MANTECA].[BI_Tipo_Sector]
-DROP TABLE [MANTECA].[BI_Neumatico] --esta no estaba
 DROP TABLE [MANTECA].[BI_Tipo_Neumatico]
 DROP TABLE [MANTECA].[BI_Tipo_incidente]
 DROP TABLE [MANTECA].[BI_Fecha]

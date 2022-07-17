@@ -85,9 +85,13 @@ CREATE TABLE [MANTECA].[BI_Medicion] (
     motor_desgaste DECIMAL(18,6) NOT NULL,
     caja_de_cambios_desgaste_porcentual_acumulado DECIMAL(18,2) NOT NULL,
 	neumDelDer_desgaste DECIMAL (18,2) NULL,
+	id_tipo_neumDelDer int NULL,
 	neumDelIzq_desgaste DECIMAL (18,2) NULL,
+	id_tipo_neumDelIzq int NULL,
 	neumTraDer_desgaste DECIMAL (18,2) NULL,
+	id_tipo_neumTraDer int NULL,
 	neumTraIzq_desgaste DECIMAL (18,2) NULL,
+	id_tipo_neumTraIzq int NULL,
 	frenoDelDer_desgaste DECIMAL (18,2) NULL,
     frenoDelIzq_desgaste DECIMAL (18,2) NULL,
 	frenoTraDer_desgaste DECIMAL (18,2) NULL,
@@ -101,7 +105,12 @@ FOREIGN KEY (id_fecha) REFERENCES [MANTECA].BI_Fecha,
 FOREIGN KEY (id_escuderia) REFERENCES [MANTECA].BI_Escuderia,
 FOREIGN KEY (id_auto) REFERENCES [MANTECA].BI_Auto,
 FOREIGN KEY (id_piloto) REFERENCES [MANTECA].BI_piloto,
-FOREIGN KEY (id_circuito) REFERENCES [MANTECA].BI_Circuito
+FOREIGN KEY (id_circuito) REFERENCES [MANTECA].BI_Circuito,
+FOREIGN KEY (id_tipo_neumDelDer) REFERENCES [MANTECA].BI_Tipo_Neumatico,
+FOREIGN KEY (id_tipo_neumDelIzq) REFERENCES [MANTECA].BI_Tipo_Neumatico,
+FOREIGN KEY (id_tipo_neumTraDer) REFERENCES [MANTECA].BI_Tipo_Neumatico,
+FOREIGN KEY (id_tipo_neumTraIzq) REFERENCES [MANTECA].BI_Tipo_Neumatico
+
  	
 ALTER TABLE [MANTECA].[BI_Parada_en_box]
 ADD
@@ -227,31 +236,33 @@ JOIN MANTECA.Medicion_Caja_De_Cambios MC ON MC.ID_MEDICION=M.ID_MEDICION
 JOIN MANTECA.Medicion_Motor MOM ON MOM.ID_MEDICION=M.ID_MEDICION
 WHERE MA.DISTANCIA_RECORRIDA_VUELTA=149
 GROUP BY F.id_fecha, BA.id_escuderia, BA.id_auto,MA.ID_PILOTO, BC.id_circuito, COMBUSTIBLE, POTENCIA_MOMENTANEA, M.ID_MEDICION,M.ID_AUTO,MA.VUELTA_NUMERO, M.ID_CARRERA, MA.TIEMPO_DE_VUELTA, MC.DESGASTE_PORCENTUAL_ACUMULADO
-ORDER BY 4 DESC ,3 DESC, 9 asc  
+ORDER BY 5 DESC ,3 DESC, 10 asc  
 
 --PROCEDURES CARGA DESGASTES NEUMATICOS Y FRENOS
 GO
 CREATE PROC CargaDesgastesNeumaticosDelDer
 AS
 BEGIN
-DECLARE @Desgaste decimal(18,2), @auto int, @circuito int, @vuelta decimal(18,0)    
-DECLARE cursorDesgastes CURSOR FOR SELECT (mn.PROFUNDIDAD-mnf.PROFUNDIDAD), ma.ID_AUTO,C.ID_CIRCUITO,ma.VUELTA_NUMERO FROM MANTECA.Medicion_Neumatico MN
+DECLARE @Desgaste decimal(18,2), @auto int, @circuito int, @vuelta decimal(18,0), @tipo int    
+DECLARE cursorDesgastes CURSOR FOR SELECT (mn.PROFUNDIDAD-mnf.PROFUNDIDAD), ma.ID_AUTO,C.ID_CIRCUITO,ma.VUELTA_NUMERO, TN.id_tipo_neumatico FROM MANTECA.Medicion_Neumatico MN
 									JOIN MANTECA.Medicion M ON m.ID_MEDICION = mn.MEDICION_AUTO
 									JOIN MANTECA.Medicion_Auto ma ON ma.ID_MEDICION = mn.MEDICION_AUTO
 									JOIN MANTECA.Medicion_Neumatico mnf ON mnf.ID_NEUMATICO = mn.ID_NEUMATICO
 									JOIN MANTECA.Medicion_Auto maf ON maf.ID_MEDICION = mnf.MEDICION_AUTO
 									JOIN MANTECA.Carrera C ON M.ID_CARRERA=C.ID_CARRERA
+									JOIN MANTECA.Neumatico N ON N.ID_NEUMATICO=MN.ID_NEUMATICO
+									JOIN MANTECA.BI_Tipo_Neumatico TN ON N.NEUMATICO_TIPO=TN.descripcion
 									WHERE mn.POSICION='Delantero Derecho' AND  ma.DISTANCIA_RECORRIDA_VUELTA = 0 AND maf.DISTANCIA_RECORRIDA_VUELTA = 149 AND maf.ID_AUTO = ma.ID_AUTO AND maf.VUELTA_NUMERO = ma.VUELTA_NUMERO AND mn.POSICION = mnf.POSICION
 									ORDER BY M.ID_AUTO DESC, C.ID_CIRCUITO DESC, MA.VUELTA_NUMERO ASC
 OPEN cursorDesgastes
 FETCH NEXT FROM cursorDesgastes
-INTO @Desgaste, @auto, @circuito, @vuelta
+INTO @Desgaste, @auto, @circuito, @vuelta, @tipo
 WHILE @@FETCH_STATUS = 0
 BEGIN
-UPDATE MANTECA.BI_Medicion SET neumDelDer_desgaste=@Desgaste
+UPDATE MANTECA.BI_Medicion SET neumDelDer_desgaste=@Desgaste, id_tipo_neumDelDer=@tipo
 WHERE vuelta_numero=@vuelta and id_auto=@auto and id_circuito=@circuito
 FETCH NEXT FROM cursorDesgastes
-INTO @Desgaste, @auto, @circuito, @vuelta
+INTO @Desgaste, @auto, @circuito, @vuelta, @tipo
 END
 CLOSE cursorDesgastes
 DEALLOCATE cursorDesgastes
@@ -261,24 +272,26 @@ GO
 CREATE PROC CargaDesgastesNeumaticosDelIzq
 AS
 BEGIN
-DECLARE @Desgaste decimal(18,2), @auto int, @circuito int, @vuelta decimal(18,0)    
-DECLARE cursorDesgastes CURSOR FOR SELECT (mn.PROFUNDIDAD-mnf.PROFUNDIDAD), ma.ID_AUTO,C.ID_CIRCUITO,ma.VUELTA_NUMERO FROM MANTECA.Medicion_Neumatico MN
+DECLARE @Desgaste decimal(18,2), @auto int, @circuito int, @vuelta decimal(18,0), @tipo int    
+DECLARE cursorDesgastes CURSOR FOR SELECT (mn.PROFUNDIDAD-mnf.PROFUNDIDAD), ma.ID_AUTO,C.ID_CIRCUITO,ma.VUELTA_NUMERO, TN.id_tipo_neumatico FROM MANTECA.Medicion_Neumatico MN
 									JOIN MANTECA.Medicion M ON m.ID_MEDICION = mn.MEDICION_AUTO
 									JOIN MANTECA.Medicion_Auto ma ON ma.ID_MEDICION = mn.MEDICION_AUTO
 									JOIN MANTECA.Medicion_Neumatico mnf ON mnf.ID_NEUMATICO = mn.ID_NEUMATICO
 									JOIN MANTECA.Medicion_Auto maf ON maf.ID_MEDICION = mnf.MEDICION_AUTO
 									JOIN MANTECA.Carrera C ON M.ID_CARRERA=C.ID_CARRERA
+									JOIN MANTECA.Neumatico N ON N.ID_NEUMATICO=MN.ID_NEUMATICO
+									JOIN MANTECA.BI_Tipo_Neumatico TN ON N.NEUMATICO_TIPO=TN.descripcion
 									WHERE mn.POSICION='Delantero Izquierdo' AND  ma.DISTANCIA_RECORRIDA_VUELTA = 0 AND maf.DISTANCIA_RECORRIDA_VUELTA = 149 AND maf.ID_AUTO = ma.ID_AUTO AND maf.VUELTA_NUMERO = ma.VUELTA_NUMERO AND mn.POSICION = mnf.POSICION
 									ORDER BY M.ID_AUTO DESC, C.ID_CIRCUITO DESC, MA.VUELTA_NUMERO ASC
 OPEN cursorDesgastes
 FETCH NEXT FROM cursorDesgastes
-INTO @Desgaste, @auto, @circuito, @vuelta
+INTO @Desgaste, @auto, @circuito, @vuelta, @tipo
 WHILE @@FETCH_STATUS = 0
 BEGIN
-UPDATE MANTECA.BI_Medicion SET neumDelIzq_desgaste=@Desgaste
+UPDATE MANTECA.BI_Medicion SET neumDelIzq_desgaste=@Desgaste, id_tipo_neumDelIzq=@tipo
 WHERE vuelta_numero=@vuelta and id_auto=@auto and id_circuito=@circuito
 FETCH NEXT FROM cursorDesgastes
-INTO @Desgaste, @auto, @circuito, @vuelta
+INTO @Desgaste, @auto, @circuito, @vuelta, @tipo
 END
 CLOSE cursorDesgastes
 DEALLOCATE cursorDesgastes
@@ -288,24 +301,26 @@ GO
 CREATE PROC CargaDesgastesNeumaticosTraDer
 AS
 BEGIN
-DECLARE @Desgaste decimal(18,2), @auto int, @circuito int, @vuelta decimal(18,0)    
-DECLARE cursorDesgastes CURSOR FOR SELECT (mn.PROFUNDIDAD-mnf.PROFUNDIDAD), ma.ID_AUTO,C.ID_CIRCUITO,ma.VUELTA_NUMERO FROM MANTECA.Medicion_Neumatico MN
+DECLARE @Desgaste decimal(18,2), @auto int, @circuito int, @vuelta decimal(18,0), @tipo int    
+DECLARE cursorDesgastes CURSOR FOR SELECT (mn.PROFUNDIDAD-mnf.PROFUNDIDAD), ma.ID_AUTO,C.ID_CIRCUITO,ma.VUELTA_NUMERO, TN.id_tipo_neumatico FROM MANTECA.Medicion_Neumatico MN
 									JOIN MANTECA.Medicion M ON m.ID_MEDICION = mn.MEDICION_AUTO
 									JOIN MANTECA.Medicion_Auto ma ON ma.ID_MEDICION = mn.MEDICION_AUTO
 									JOIN MANTECA.Medicion_Neumatico mnf ON mnf.ID_NEUMATICO = mn.ID_NEUMATICO
 									JOIN MANTECA.Medicion_Auto maf ON maf.ID_MEDICION = mnf.MEDICION_AUTO
 									JOIN MANTECA.Carrera C ON M.ID_CARRERA=C.ID_CARRERA
+									JOIN MANTECA.Neumatico N ON N.ID_NEUMATICO=MN.ID_NEUMATICO
+									JOIN MANTECA.BI_Tipo_Neumatico TN ON N.NEUMATICO_TIPO=TN.descripcion
 									WHERE mn.POSICION='Trasero Derecho' AND  ma.DISTANCIA_RECORRIDA_VUELTA = 0 AND maf.DISTANCIA_RECORRIDA_VUELTA = 149 AND maf.ID_AUTO = ma.ID_AUTO AND maf.VUELTA_NUMERO = ma.VUELTA_NUMERO AND mn.POSICION = mnf.POSICION
 									ORDER BY M.ID_AUTO DESC, C.ID_CIRCUITO DESC, MA.VUELTA_NUMERO ASC
 OPEN cursorDesgastes
 FETCH NEXT FROM cursorDesgastes
-INTO @Desgaste, @auto, @circuito, @vuelta
+INTO @Desgaste, @auto, @circuito, @vuelta, @tipo
 WHILE @@FETCH_STATUS = 0
 BEGIN
-UPDATE MANTECA.BI_Medicion SET neumTraDer_desgaste=@Desgaste
+UPDATE MANTECA.BI_Medicion SET neumTraDer_desgaste=@Desgaste, id_tipo_neumTraDer=@tipo
 WHERE vuelta_numero=@vuelta and id_auto=@auto and id_circuito=@circuito
 FETCH NEXT FROM cursorDesgastes
-INTO @Desgaste, @auto, @circuito, @vuelta
+INTO @Desgaste, @auto, @circuito, @vuelta, @tipo
 END
 CLOSE cursorDesgastes
 DEALLOCATE cursorDesgastes
@@ -315,24 +330,26 @@ GO
 CREATE PROC CargaDesgastesNeumaticosTraIzq
 AS
 BEGIN
-DECLARE @Desgaste decimal(18,2), @auto int, @circuito int, @vuelta decimal(18,0)    
-DECLARE cursorDesgastes CURSOR FOR SELECT (mn.PROFUNDIDAD-mnf.PROFUNDIDAD), ma.ID_AUTO,C.ID_CIRCUITO,ma.VUELTA_NUMERO FROM MANTECA.Medicion_Neumatico MN
+DECLARE @Desgaste decimal(18,2), @auto int, @circuito int, @vuelta decimal(18,0), @tipo int    
+DECLARE cursorDesgastes CURSOR FOR SELECT (mn.PROFUNDIDAD-mnf.PROFUNDIDAD), ma.ID_AUTO,C.ID_CIRCUITO,ma.VUELTA_NUMERO, TN.id_tipo_neumatico FROM MANTECA.Medicion_Neumatico MN
 									JOIN MANTECA.Medicion M ON m.ID_MEDICION = mn.MEDICION_AUTO
 									JOIN MANTECA.Medicion_Auto ma ON ma.ID_MEDICION = mn.MEDICION_AUTO
 									JOIN MANTECA.Medicion_Neumatico mnf ON mnf.ID_NEUMATICO = mn.ID_NEUMATICO
 									JOIN MANTECA.Medicion_Auto maf ON maf.ID_MEDICION = mnf.MEDICION_AUTO
 									JOIN MANTECA.Carrera C ON M.ID_CARRERA=C.ID_CARRERA
+									JOIN MANTECA.Neumatico N ON N.ID_NEUMATICO=MN.ID_NEUMATICO
+									JOIN MANTECA.BI_Tipo_Neumatico TN ON N.NEUMATICO_TIPO=TN.descripcion
 									WHERE mn.POSICION='Trasero Izquierdo' AND  ma.DISTANCIA_RECORRIDA_VUELTA = 0 AND maf.DISTANCIA_RECORRIDA_VUELTA = 149 AND maf.ID_AUTO = ma.ID_AUTO AND maf.VUELTA_NUMERO = ma.VUELTA_NUMERO AND mn.POSICION = mnf.POSICION
 									ORDER BY M.ID_AUTO DESC, C.ID_CIRCUITO DESC, MA.VUELTA_NUMERO ASC
 OPEN cursorDesgastes
 FETCH NEXT FROM cursorDesgastes
-INTO @Desgaste, @auto, @circuito, @vuelta
+INTO @Desgaste, @auto, @circuito, @vuelta, @tipo
 WHILE @@FETCH_STATUS = 0
 BEGIN
-UPDATE MANTECA.BI_Medicion SET neumTraIzq_desgaste=@Desgaste
+UPDATE MANTECA.BI_Medicion SET neumTraIzq_desgaste=@Desgaste, id_tipo_neumTraIzq=@tipo
 WHERE vuelta_numero=@vuelta and id_auto=@auto and id_circuito=@circuito
 FETCH NEXT FROM cursorDesgastes
-INTO @Desgaste, @auto, @circuito, @vuelta
+INTO @Desgaste, @auto, @circuito, @vuelta, @tipo
 END
 CLOSE cursorDesgastes
 DEALLOCATE cursorDesgastes
@@ -571,10 +588,7 @@ SELECT id_escuderia,
        CONVERT(decimal(10,2),count(id_tipo_sector))/CONVERT(decimal(10,2),(SELECT count(*) FROM MANTECA.BI_Incidente IT
 							  JOIN MANTECA.BI_Fecha FT ON FT.ID_FECHA=IT.id_fecha
 							  WHERE FT.FECHA_ANIO=F.FECHA_ANIO AND IT.id_escuderia=I.id_escuderia
-							  GROUP BY IT.id_escuderia, FT.FECHA_ANIO)),/* ACA DIVIDO LA CANTIDAD DE INCIDENTES POR TIPO DE SECTOR DE LA ESCUDERIA POR ANIO 
-																		   POR LA CANTIDAD DE INCIDENTES TOTALES DE LA ESCUDERIA EN EL ANIO. DA TODO 1 PORQUE
-																		   TODOS LOS INCIDENTES FUERON EN EL MISMO TIPO DE SECTOR ENTONCES EL TOTAL DE INCIDENTES
-																		   ES IGUAL AL TOTAL DE INCIDENTES POR TIPO */
+							  GROUP BY IT.id_escuderia, FT.FECHA_ANIO)),
        F.FECHA_ANIO	
 FROM MANTECA.BI_Incidente I
 JOIN MANTECA.BI_Fecha F ON F.ID_FECHA=I.id_fecha
